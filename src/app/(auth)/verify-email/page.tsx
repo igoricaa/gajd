@@ -7,10 +7,11 @@ import {
 } from './components';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
 import Link from 'next/link';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
-    return 'Too many requests';
+    return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
   const { user } = await getCurrentSession();

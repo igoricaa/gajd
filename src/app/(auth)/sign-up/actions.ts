@@ -77,7 +77,7 @@ export async function signUpAction(
   formData: FormData
 ): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
-    return { message: 'Too many requests' };
+    return { message: AUTH_ERROR_MESSAGES.RATE_LIMIT };
   }
 
   const clientIP = await getClientIP();

@@ -1,12 +1,13 @@
 import { getCurrentSession } from '@/lib/auth/session';
 import { getUserRecoveryCode } from '@/lib/auth/user';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
-    return 'Too many requests';
+    return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
   const { session, user } = await getCurrentSession();

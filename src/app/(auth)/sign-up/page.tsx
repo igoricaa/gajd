@@ -4,10 +4,11 @@ import Link from 'next/link';
 
 import { redirect } from 'next/navigation';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
-    return 'Too many requests';
+    return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
   const { session, user } = await getCurrentSession();

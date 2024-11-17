@@ -2,10 +2,11 @@ import { validatePasswordResetSessionRequest } from '@/lib/auth/password-reset';
 import { redirect } from 'next/navigation';
 import { PasswordResetEmailVerificationForm } from './components';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
-    return 'Too many requests';
+    return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
   const { session } = await validatePasswordResetSessionRequest();

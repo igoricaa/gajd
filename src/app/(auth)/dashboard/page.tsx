@@ -2,10 +2,11 @@ import { getCurrentSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import SignOutButton from './signout-button';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
-    return 'Too  many requests';
+    return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
   const { session, user } = await getCurrentSession();
