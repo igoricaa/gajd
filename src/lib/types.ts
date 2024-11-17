@@ -1,5 +1,5 @@
 export interface ActionResult {
-  message: string;
+  message: string | null | undefined;
 }
 
 export interface EmailVerificationRequest {

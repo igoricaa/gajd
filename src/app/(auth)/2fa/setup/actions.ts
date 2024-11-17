@@ -5,6 +5,7 @@ import { updateUserTOTPKey } from '@/lib/auth/user';
 import { RefillingTokenBucket } from '@/lib/rate-limit/rate-limit';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 import { decodeBase64 } from '@oslojs/encoding';
 import { verifyTOTP } from '@oslojs/otp';
 import { redirect } from 'next/navigation';
@@ -17,28 +18,27 @@ export async function setup2FAAction(
 ): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
   const { session, user } = await getCurrentSession();
   if (session === null) {
     return {
-      message: 'Not authenticated',
+      message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (!user.emailVerified) {
+  if (
+    !user.emailVerified ||
+    (user.registered2FA && !session.twoFactorVerified)
+  ) {
     return {
-      message: 'Forbidden',
+      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return {
-      message: 'Forbidden',
-    };
-  }
+
   if (!totpUpdateBucket.check(user.id, 1)) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
@@ -46,17 +46,12 @@ export async function setup2FAAction(
   const code = formData.get('code');
   if (typeof encodedKey !== 'string' || typeof code !== 'string') {
     return {
-      message: 'Invalid or missing fields',
+      message: AUTH_ERROR_MESSAGES.INVALID_FIELDS,
     };
   }
-  if (code === '') {
+  if (code === '' || encodedKey.length !== 28) {
     return {
-      message: 'Please enter your code',
-    };
-  }
-  if (encodedKey.length !== 28) {
-    return {
-      message: 'Please enter your code',
+      message: AUTH_ERROR_MESSAGES.EMPTY_CODE_FIELD,
     };
   }
 
@@ -65,23 +60,23 @@ export async function setup2FAAction(
     key = decodeBase64(encodedKey);
   } catch {
     return {
-      message: 'Invalid key',
+      message: AUTH_ERROR_MESSAGES.INVALID_KEY,
     };
   }
   if (key.byteLength !== 20) {
     return {
-      message: 'Invalid key',
+      message: AUTH_ERROR_MESSAGES.INVALID_KEY,
     };
   }
   if (!totpUpdateBucket.consume(user.id, 1)) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   if (!verifyTOTP(key, 30, 6, code)) {
     return {
-      message: 'Invalid code',
+      message: AUTH_ERROR_MESSAGES.INVALID_CODE,
     };
   }
   await updateUserTOTPKey(session.userId, key);

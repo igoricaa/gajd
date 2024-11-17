@@ -7,19 +7,20 @@ import {
 } from '@/lib/auth/session';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 export async function signOut(): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const { session } = await getCurrentSession();
-  if (!session) {
+  if (session === null) {
     return {
-      message: 'Unauthorized',
+      message: AUTH_ERROR_MESSAGES.UNAUTHORIZED,
     };
   }
 

@@ -14,6 +14,7 @@ import {
 import { updateUserPassword } from '@/lib/auth/user';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 export async function resetPasswordAction(
@@ -22,7 +23,7 @@ export async function resetPasswordAction(
 ): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
@@ -31,44 +32,46 @@ export async function resetPasswordAction(
 
   if (passwordResetSession === null) {
     return {
-      message: 'Not authenticated',
+      message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (!passwordResetSession.emailVerified) {
+  if (
+    !passwordResetSession.emailVerified ||
+    (user.registered2FA && !passwordResetSession.twoFactorVerified)
+  ) {
     return {
-      message: 'Forbidden',
-    };
-  }
-  if (user.registered2FA && !passwordResetSession.twoFactorVerified) {
-    return {
-      message: 'Forbidden',
+      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };
   }
 
   const password = formData.get('password');
   if (typeof password !== 'string') {
     return {
-      message: 'Invalid or missing fields',
+      message: AUTH_ERROR_MESSAGES.INVALID_FIELDS,
     };
   }
 
   const strongPassword = await verifyPasswordStrength(password);
   if (!strongPassword) {
     return {
-      message: 'Weak password',
+      message: AUTH_ERROR_MESSAGES.WEAK_PASSWORD,
     };
   }
 
-  await invalidateUserPasswordResetSessions(passwordResetSession.userId);
-  await invalidateUserSessions(passwordResetSession.userId);
-  await updateUserPassword(passwordResetSession.userId, password);
+  await Promise.all([
+    invalidateUserPasswordResetSessions(passwordResetSession.userId),
+    invalidateUserSessions(passwordResetSession.userId),
+    updateUserPassword(passwordResetSession.userId, password),
+  ]);
 
   const sessionFlags: SessionFlags = {
     twoFactorVerified: passwordResetSession.twoFactorVerified,
   };
 
-  await setSession(user.id, sessionFlags);
-  await deletePasswordResetSessionTokenCookie();
+  await Promise.all([
+    setSession(user.id, sessionFlags),
+    deletePasswordResetSessionTokenCookie(),
+  ]);
 
   return redirect('/');
 }

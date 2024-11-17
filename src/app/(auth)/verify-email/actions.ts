@@ -16,6 +16,7 @@ import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { sendVerificationEmailBucket } from '@/lib/rate-limit/config';
 import { ActionResult } from '@/lib/types';
 import { redirect } from 'next/navigation';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 
 const bucket = new ExpiringTokenBucket<number>(5, 60 * 30);
 
@@ -25,49 +26,50 @@ export async function verifyEmailAction(
 ): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const { session, user } = await getCurrentSession();
+
   if (session === null) {
     return {
-      message: 'Not authenticated',
+      message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
   if (user.registered2FA && !session.twoFactorVerified) {
     return {
-      message: 'Forbidden',
+      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };
   }
   if (!bucket.check(user.id, 1)) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const code = formData.get('code');
   if (typeof code !== 'string') {
     return {
-      message: 'Invalid or missing fields',
+      message: AUTH_ERROR_MESSAGES.INVALID_FIELDS,
     };
   }
   if (code === '') {
     return {
-      message: 'Enter your code',
+      message: AUTH_ERROR_MESSAGES.EMPTY_CODE_FIELD,
     };
   }
 
   let verificationRequest = await getUserEmailVerificationRequestFromRequest();
   if (verificationRequest === null) {
     return {
-      message: 'Not authenticated',
+      message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
 
   if (!bucket.consume(user.id, 1)) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
@@ -82,24 +84,22 @@ export async function verifyEmailAction(
     );
 
     return {
-      message:
-        'The verification code was expired. We sent another code to your inbox.',
+      message: AUTH_ERROR_MESSAGES.EXPIRED_CODE,
     };
   }
 
   if (verificationRequest.code !== code) {
     return {
-      message: 'Incorrect code.',
+      message: AUTH_ERROR_MESSAGES.INCORRECT_CODE,
     };
   }
 
-  await deleteUserEmailVerificationRequest(user.id);
-  await invalidateUserPasswordResetSessions(user.id);
-  await updateUserEmailAndSetEmailAsVerified(
-    user.id,
-    verificationRequest.email
-  );
-  await deleteEmailVerificationRequestCookie();
+  await Promise.all([
+    deleteUserEmailVerificationRequest(user.id),
+    invalidateUserPasswordResetSessions(user.id),
+    updateUserEmailAndSetEmailAsVerified(user.id, verificationRequest.email),
+    deleteEmailVerificationRequestCookie(),
+  ]);
 
   if (!user.registered2FA) {
     return redirect('/2fa/setup');
@@ -110,24 +110,25 @@ export async function verifyEmailAction(
 export async function resendEmailVerificationCodeAction(): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const { session, user } = await getCurrentSession();
+  
   if (session === null) {
     return {
-      message: 'Not authenticated',
+      message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
   if (user.registered2FA && !session.twoFactorVerified) {
     return {
-      message: 'Forbidden',
+      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };
   }
   if (!sendVerificationEmailBucket.check(user.id, 1)) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
@@ -135,12 +136,12 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
   if (verificationRequest === null) {
     if (user.emailVerified) {
       return {
-        message: 'Forbidden',
+        message: AUTH_ERROR_MESSAGES.FORBIDDEN,
       };
     }
     if (!sendVerificationEmailBucket.consume(user.id, 1)) {
       return {
-        message: 'Too many requests',
+        message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
       };
     }
 
@@ -151,7 +152,7 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
   } else {
     if (!sendVerificationEmailBucket.consume(user.id, 1)) {
       return {
-        message: 'Too many requests',
+        message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
       };
     }
 
@@ -160,6 +161,7 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
       verificationRequest.email
     );
   }
+
   await sendVerificationEmail(
     verificationRequest.email,
     verificationRequest.code
@@ -167,6 +169,6 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
   await setEmailVerificationRequestCookie(verificationRequest);
 
   return {
-    message: 'A new code was sent to your inbox.',
+    message: AUTH_ERROR_MESSAGES.NEW_CODE_SENT,
   };
 }

@@ -8,6 +8,7 @@ import { setUserAsEmailVerifiedIfEmailMatches } from '@/lib/auth/user';
 import { ExpiringTokenBucket } from '@/lib/rate-limit/rate-limit';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
+import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 const emailVerificationBucket = new ExpiringTokenBucket<number>(5, 60 * 30);
@@ -18,44 +19,46 @@ export async function verifyPasswordResetEmailAction(
 ): Promise<ActionResult> {
   if (!(await globalPOSTRateLimit())) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const { session } = await validatePasswordResetSessionRequest();
   if (session === null) {
     return {
-      message: 'Not authenticated',
+      message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
   if (session.emailVerified) {
     return {
-      message: 'Forbidden',
+      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };
   }
   if (!emailVerificationBucket.check(session.userId, 1)) {
     return {
-      message: 'Too many requests',
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const code = formData.get('code');
   if (typeof code !== 'string') {
     return {
-      message: 'Invalid or missing fields',
+      message: AUTH_ERROR_MESSAGES.INVALID_FIELDS,
     };
   }
   if (code === '') {
     return {
-      message: 'Please enter your code',
+      message: AUTH_ERROR_MESSAGES.EMPTY_CODE_FIELD,
     };
   }
   if (!emailVerificationBucket.consume(session.userId, 1)) {
-    return { message: 'Too many requests' };
+    return {
+      message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
+    };
   }
   if (code !== session.code) {
     return {
-      message: 'Incorrect code',
+      message: AUTH_ERROR_MESSAGES.INCORRECT_CODE,
     };
   }
 
@@ -65,9 +68,10 @@ export async function verifyPasswordResetEmailAction(
     session.userId,
     session.email
   );
+
   if (!emailMatches) {
     return {
-      message: 'Please restart the process',
+      message: AUTH_ERROR_MESSAGES.RESTART_PROCESS,
     };
   }
   return redirect('/reset-password/2fa');
