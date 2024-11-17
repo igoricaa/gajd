@@ -63,6 +63,7 @@ export async function validatePasswordResetSessionToken(
         registered2FA: sql<boolean>`CASE WHEN ${users.totpKey} IS NOT NULL THEN true ELSE false END`,
         recoveryCode: users.recoveryCode,
         totpKey: users.totpKey,
+        accountType: users.accountType,
         role: users.role,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
