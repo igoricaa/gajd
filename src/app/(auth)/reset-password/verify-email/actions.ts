@@ -74,5 +74,8 @@ export async function verifyPasswordResetEmailAction(
       message: AUTH_ERROR_MESSAGES.RESTART_PROCESS,
     };
   }
-  return redirect('/reset-password/2fa');
+
+  // TODO:
+  // return redirect('/reset-password/2fa');
+  return redirect('/');
 }

@@ -7,29 +7,8 @@ import {
   timestamp,
   integer,
   boolean,
-  customType,
   pgEnum,
 } from 'drizzle-orm/pg-core';
-
-const bytea = customType<{ data: Uint8Array; driverData: string | Buffer }>({
-  dataType() {
-    return 'bytea';
-  },
-  toDriver(value: Uint8Array): string {
-    return `\\x${Buffer.from(value).toString('hex')}`;
-  },
-  fromDriver(value: string | Buffer): Uint8Array {
-    if (Buffer.isBuffer(value)) {
-      return new Uint8Array(value);
-    }
-    // Handle string format
-    const hexString =
-      typeof value === 'string' && value.startsWith('\\x')
-        ? value.substring(2)
-        : value;
-    return new Uint8Array(Buffer.from(hexString, 'hex'));
-  },
-});
 
 export const roleEnum = pgEnum('role', ['member', 'admin']);
 export const accountTypeEnum = pgEnum('type', ['email', 'google', 'github']);
@@ -45,9 +24,6 @@ export const users = pgTable('users', {
   role: roleEnum('role').notNull().default('member'),
   accountType: accountTypeEnum('account_type').notNull().default('email'),
   emailVerified: boolean('email_verified').notNull().default(false),
-  registered2FA: boolean('registered_2fa').notNull().default(false),
-  recoveryCode: bytea('recovery_code').notNull(),
-  totpKey: bytea('totp_key'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   deletedAt: timestamp('deleted_at'),

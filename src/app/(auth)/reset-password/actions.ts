@@ -6,11 +6,7 @@ import {
   invalidateUserPasswordResetSessions,
   validatePasswordResetSessionRequest,
 } from '@/lib/auth/password-reset';
-import {
-  invalidateUserSessions,
-  SessionFlags,
-  setSession,
-} from '@/lib/auth/session';
+import { createSession, deleteSession, SessionFlags } from '@/lib/auth/session';
 import { updateUserPassword } from '@/lib/auth/user';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
@@ -36,8 +32,7 @@ export async function resetPasswordAction(
     };
   }
   if (
-    !passwordResetSession.emailVerified ||
-    (user.registered2FA && !passwordResetSession.twoFactorVerified)
+    !passwordResetSession.emailVerified
   ) {
     return {
       message: AUTH_ERROR_MESSAGES.FORBIDDEN,
@@ -60,7 +55,8 @@ export async function resetPasswordAction(
 
   await Promise.all([
     invalidateUserPasswordResetSessions(passwordResetSession.userId),
-    invalidateUserSessions(passwordResetSession.userId),
+    // invalidateUserSessions(passwordResetSession.userId),
+    deleteSession(),
     updateUserPassword(passwordResetSession.userId, password),
   ]);
 
@@ -69,7 +65,7 @@ export async function resetPasswordAction(
   };
 
   await Promise.all([
-    setSession(user.id, sessionFlags),
+    createSession(user.id, sessionFlags),
     deletePasswordResetSessionTokenCookie(),
   ]);
 

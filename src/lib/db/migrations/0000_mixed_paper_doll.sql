@@ -39,8 +39,6 @@
 -- 	"role" "role" DEFAULT 'member' NOT NULL USING "role"::"role",
 -- 	"account_type" "type" DEFAULT 'email' NOT NULL,
 -- 	"email_verified" boolean DEFAULT false NOT NULL,
--- 	"registered_2fa" boolean DEFAULT false NOT NULL,
--- 	"recovery_code" "bytea" NOT NULL,
 -- 	"totp_key" "bytea",
 -- 	"created_at" timestamp DEFAULT now() NOT NULL,
 -- 	"updated_at" timestamp DEFAULT now() NOT NULL,

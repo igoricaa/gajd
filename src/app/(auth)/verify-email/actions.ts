@@ -37,11 +37,6 @@ export async function verifyEmailAction(
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return {
-      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
-    };
-  }
   if (!bucket.check(user.id, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
@@ -101,9 +96,6 @@ export async function verifyEmailAction(
     deleteEmailVerificationRequestCookie(),
   ]);
 
-  if (!user.registered2FA) {
-    return redirect('/2fa/setup');
-  }
   return redirect('/');
 }
 
@@ -115,17 +107,13 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
   }
 
   const { session, user } = await getCurrentSession();
-  
+
   if (session === null) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return {
-      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
-    };
-  }
+
   if (!sendVerificationEmailBucket.check(user.id, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,

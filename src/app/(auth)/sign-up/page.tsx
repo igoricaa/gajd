@@ -11,19 +11,15 @@ export default async function Page() {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  const { session, user } = await getCurrentSession();
-  if (session !== null) {
-    if (!user.emailVerified) {
-      return redirect('/verify-email');
-    }
-    if (!user.registered2FA) {
-      return redirect('/2fa/setup');
-    }
-    if (!session.twoFactorVerified) {
-      return redirect('/2fa');
-    }
-    return redirect('/');
-  }
+  // const {user} = getUser();
+
+  // if (session !== null) {
+  // if (!user.emailVerified) {
+  //   return redirect('/verify-email');
+  // }
+
+  // return redirect('/');
+  // }
   return (
     <>
       <h1>Create an account</h1>

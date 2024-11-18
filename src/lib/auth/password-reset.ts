@@ -60,9 +60,6 @@ export async function validatePasswordResetSessionToken(
         passwordHash: users.passwordHash,
         githubId: users.githubId,
         emailVerified: users.emailVerified,
-        registered2FA: sql<boolean>`CASE WHEN ${users.totpKey} IS NOT NULL THEN true ELSE false END`,
-        recoveryCode: users.recoveryCode,
-        totpKey: users.totpKey,
         accountType: users.accountType,
         role: users.role,
         createdAt: users.createdAt,
@@ -113,15 +110,6 @@ export async function setPasswordResetSessionAsEmailVerified(
   await db
     .update(passwordResetSession)
     .set({ emailVerified: true })
-    .where(eq(passwordResetSession.id, sessionId));
-}
-
-export async function setPasswordResetSessionAs2FAVerified(
-  sessionId: string
-): Promise<void> {
-  await db
-    .update(passwordResetSession)
-    .set({ twoFactorVerified: true })
     .where(eq(passwordResetSession.id, sessionId));
 }
 

@@ -276,19 +276,6 @@
           "notNull": true,
           "default": false
         },
-        "registered_2fa": {
-          "name": "registered_2fa",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "recovery_code": {
-          "name": "recovery_code",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        },
         "totp_key": {
           "name": "totp_key",
           "type": "bytea",

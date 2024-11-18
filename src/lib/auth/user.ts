@@ -3,9 +3,7 @@
 import { eq, InferInsertModel } from 'drizzle-orm';
 import { db } from '../db';
 import { User, users } from '../db/schema';
-import { decrypt, decryptToString, encryptString } from './encryption';
 import { hashPassword } from './password';
-import { generateRandomRecoveryCode } from './utils';
 
 export async function createUser(
   email: string,
@@ -13,8 +11,6 @@ export async function createUser(
   password: string
 ): Promise<User> {
   const passwordHash = await hashPassword(password);
-  const recoveryCode = await generateRandomRecoveryCode();
-  const encryptedRecoveryCode = encryptString(recoveryCode);
 
   const result = await db
     .insert(users)
@@ -22,7 +18,6 @@ export async function createUser(
       username: username,
       email,
       passwordHash,
-      recoveryCode: encryptedRecoveryCode,
     })
     .returning();
 
@@ -46,24 +41,11 @@ export async function createUserGithub(
     username: githubUsername,
     githubId,
     passwordHash: '',
-    recoveryCode: new Uint8Array(),
   };
 
   const [result]: User[] = await db.insert(users).values(user).returning();
 
   return result;
-}
-
-export async function resetUserRecoveryCode(userId: number): Promise<string> {
-  const recoveryCode = await generateRandomRecoveryCode();
-  const encrypted = encryptString(recoveryCode);
-
-  await db
-    .update(users)
-    .set({ recoveryCode: encrypted })
-    .where(eq(users.id, userId));
-
-  return recoveryCode;
 }
 
 export async function getUserFromEmail(email: string): Promise<User | null> {
@@ -139,57 +121,12 @@ export async function setUserAsEmailVerifiedIfEmailMatches(
   return result.length > 0;
 }
 
-export async function getUserRecoveryCode(userId: number): Promise<string> {
-  const result = await db
-    .select({ recoveryCode: users.recoveryCode })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-
-  if (result.length < 1) {
-    throw new Error('Invalid user ID');
-  }
-
-  return decryptToString(result[0].recoveryCode);
-}
-
-export async function getUserTOTPKey(
-  userId: number
-): Promise<Uint8Array | null> {
-  const result = await db
-    .select({ totpKey: users.totpKey })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-
-  if (result.length < 1) {
-    throw new Error('Invalid user ID');
-  }
-
-  const encrypted = result[0].totpKey;
-  if (!encrypted) {
-    return null;
-  }
-
-  return decrypt(encrypted);
-}
-
-export async function updateUserTOTPKey(
-  userId: number,
-  totpKey: Uint8Array
-): Promise<void> {
-  await db.update(users).set({ totpKey }).where(eq(users.id, userId));
-}
-
 export async function updateUserPassword(
   userId: number,
   password: string
 ): Promise<void> {
   const passwordHash = await hashPassword(password);
-  await db
-    .update(users)
-    .set({ passwordHash })
-    .where(eq(users.id, userId));
+  await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
 }
 
 type UserInsert = InferInsertModel<typeof users>;

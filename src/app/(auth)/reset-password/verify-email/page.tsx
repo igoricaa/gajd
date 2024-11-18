@@ -15,9 +15,6 @@ export default async function Page() {
     return redirect('/forgot-password');
   }
   if (session.emailVerified) {
-    if (!session.twoFactorVerified) {
-      return redirect('/reset-password/2fa');
-    }
     return redirect('/reset-password');
   }
   return (

@@ -10,17 +10,8 @@ import {
   verifyPasswordStrength,
   verifyPasswordHash,
 } from '@/lib/auth/password';
-import {
-  getCurrentSession,
-  invalidateUserSessions,
-  SessionFlags,
-  setSession,
-} from '@/lib/auth/session';
-import {
-  getUserPasswordHash,
-  resetUserRecoveryCode,
-  updateUserPassword,
-} from '@/lib/auth/user';
+import { getCurrentSession, SessionFlags } from '@/lib/auth/session';
+import { getUserPasswordHash, updateUserPassword } from '@/lib/auth/user';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import {
   passwordUpdateBucket,
@@ -44,11 +35,6 @@ export async function updatePasswordAction(
   if (session === null) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
-    };
-  }
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return {
-      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };
   }
   if (!passwordUpdateBucket.check(session.id, 1)) {
@@ -114,11 +100,6 @@ export async function updateEmailAction(
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return {
-      message: AUTH_ERROR_MESSAGES.FORBIDDEN,
-    };
-  }
   if (!sendVerificationEmailBucket.check(user.id, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
@@ -163,42 +144,3 @@ export async function updateEmailAction(
 
   return redirect('/verify-email');
 }
-
-export async function regenerateRecoveryCodeAction(): Promise<RegenerateRecoveryCodeActionResult> {
-  if (!globalPOSTRateLimit()) {
-    return {
-      error: AUTH_ERROR_MESSAGES.RATE_LIMIT,
-      recoveryCode: null,
-    };
-  }
-
-  const { session, user } = await getCurrentSession();
-  if (session === null || user === null) {
-    return {
-      error: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
-      recoveryCode: null,
-    };
-  }
-  if (!user.emailVerified || !session.twoFactorVerified) {
-    return {
-      error: AUTH_ERROR_MESSAGES.FORBIDDEN,
-      recoveryCode: null,
-    };
-  }
-
-  const recoveryCode = await resetUserRecoveryCode(session.userId);
-  return {
-    error: null,
-    recoveryCode,
-  };
-}
-
-type RegenerateRecoveryCodeActionResult =
-  | {
-      error: string;
-      recoveryCode: null;
-    }
-  | {
-      error: null;
-      recoveryCode: string;
-    };

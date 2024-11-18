@@ -17,12 +17,6 @@ export default async function Page() {
   if (!user.emailVerified) {
     return redirect('/verify-email');
   }
-  if (!user.registered2FA) {
-    return redirect('/2fa/setup');
-  }
-  if (!session.twoFactorVerified) {
-    return redirect('/2fa');
-  }
 
   return (
     <>

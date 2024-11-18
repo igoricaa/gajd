@@ -1,11 +1,9 @@
 import { getCurrentSession } from '@/lib/auth/session';
-import { getUserRecoveryCode } from '@/lib/auth/user';
 import { Link } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import {
   UpdateEmailForm,
   UpdatePasswordForm,
-  RecoveryCodeSection,
 } from './components';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
 import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
@@ -18,14 +16,6 @@ export default async function Page() {
   const { session, user } = await getCurrentSession();
   if (session === null) {
     return redirect('/sign-in');
-  }
-  if (user.registered2FA && !session.twoFactorVerified) {
-    return redirect('/2fa');
-  }
-
-  let recoveryCode: string | null = null;
-  if (user.registered2FA) {
-    recoveryCode = await getUserRecoveryCode(user.id);
   }
 
   return (
@@ -45,15 +35,6 @@ export default async function Page() {
           <h2>Update password</h2>
           <UpdatePasswordForm />
         </section>
-        {user.registered2FA && (
-          <section>
-            <h2>Update two-factor authentication</h2>
-            <Link href='/2fa/setup'>Update</Link>
-          </section>
-        )}
-        {recoveryCode !== null && (
-          <RecoveryCodeSection recoveryCode={recoveryCode} />
-        )}
       </main>
     </>
   );

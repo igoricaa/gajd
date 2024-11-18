@@ -8,10 +8,3 @@ export async function generateRandomOTP(): Promise<string> {
   const code = encodeBase32UpperCaseNoPadding(bytes);
   return code;
 }
-
-export async function generateRandomRecoveryCode(): Promise<string> {
-  const recoveryCodeBytes = new Uint8Array(10);
-  crypto.getRandomValues(recoveryCodeBytes);
-  const recoveryCode = encodeBase32UpperCaseNoPadding(recoveryCodeBytes);
-  return recoveryCode;
-}

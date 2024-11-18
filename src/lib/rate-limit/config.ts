@@ -8,8 +8,7 @@ export const sendVerificationEmailBucket = new ExpiringTokenBucket<number>(
   3,
   60 * 10
 );
-export const totpBucket = new ExpiringTokenBucket<number>(5, 60 * 30);
-export const recoveryCodeBucket = new ExpiringTokenBucket<number>(3, 60 * 60);
+
 export const passwordUpdateBucket = new ExpiringTokenBucket<string>(5, 60 * 30);
 export const globalBucket = new RefillingTokenBucket<string>(100, 1);
 export const throttler = new Throttler<number>([

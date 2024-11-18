@@ -118,5 +118,5 @@ export async function signUpAction(
     setSession(user.id, sessionFlags),
   ]);
 
-  return redirect('/2fa/setup');
+  return redirect('/');
 }

@@ -133,17 +133,7 @@ export const getCurrentSession = cache(
   }
 );
 
-export async function setSessionAs2FAVerified(
-  sessionId: string
-): Promise<void> {
-  await db
-    .update(sessions)
-    .set({ twoFactorVerified: true })
-    .where(eq(sessions.id, sessionId));
-}
-
 // JWT
-
 export async function createJWT(
   userId: number,
   sessionId: string,

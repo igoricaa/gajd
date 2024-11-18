@@ -89,6 +89,5 @@ export async function loginAction(
   await setSession(user.id, sessionFlags);
 
   // if (!user.emailVerified) return redirect('/verify-email');
-  // if (!user.registered2FA) return redirect('/2fa/setup');
   return redirect('/');
 }
