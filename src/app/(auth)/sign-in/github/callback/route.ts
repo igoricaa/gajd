@@ -47,9 +47,6 @@ export async function GET(request: Request): Promise<Response> {
   const existingUser = await getUserByGithubId(githubUserId);
 
   if (existingUser !== null) {
-    const sessionFlags: SessionFlags = {
-      twoFactorVerified: false,
-    };
     await setSession(existingUser.id, sessionFlags);
 
     return Response.redirect('/');
@@ -61,9 +58,6 @@ export async function GET(request: Request): Promise<Response> {
     githubEmail
   );
 
-  const sessionFlags: SessionFlags = {
-    twoFactorVerified: false,
-  };
   await setSession(user.id, sessionFlags);
 
   return Response.redirect('/');

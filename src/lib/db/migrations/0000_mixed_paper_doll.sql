@@ -17,7 +17,6 @@
 -- 	"code" varchar(255) NOT NULL,
 -- 	"expires_at" timestamp with time zone NOT NULL,
 -- 	"email_verified" boolean DEFAULT false NOT NULL,
--- 	"two_factor_verified" boolean DEFAULT false NOT NULL,
 -- 	CONSTRAINT "password_reset_session_user_id_unique" UNIQUE("user_id")
 -- );
 -- --> statement-breakpoint
@@ -25,7 +24,6 @@
 -- 	"id" text PRIMARY KEY NOT NULL,
 -- 	"user_id" integer NOT NULL,
 -- 	"expires_at" timestamp with time zone NOT NULL,
--- 	"two_factored_verified" boolean DEFAULT false NOT NULL
 -- );
 -- --> statement-breakpoint
 -- CREATE TABLE IF NOT EXISTS "users" (

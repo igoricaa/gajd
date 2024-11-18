@@ -60,12 +60,8 @@ export async function resetPasswordAction(
     updateUserPassword(passwordResetSession.userId, password),
   ]);
 
-  const sessionFlags: SessionFlags = {
-    twoFactorVerified: passwordResetSession.twoFactorVerified,
-  };
-
   await Promise.all([
-    createSession(user.id, sessionFlags),
+    createSession(user.id),
     deletePasswordResetSessionTokenCookie(),
   ]);
 

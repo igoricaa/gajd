@@ -34,15 +34,13 @@ export async function generateSessionToken(): Promise<string> {
 
 export async function createSession(
   token: string,
-  userId: number,
-  flags: SessionFlags
+  userId: number
 ): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const session: Session = {
     id: sessionId,
     userId,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-    twoFactorVerified: flags.twoFactorVerified,
   };
 
   await db.insert(sessions).values(session);
@@ -93,12 +91,11 @@ export async function setSessionTokenCookie(
   token: string,
   expiresAt: Date,
   userId: number,
-  sessionId: string,
-  twoFactorVerified: boolean
+  sessionId: string
 ): Promise<void> {
   const cookieStore = await cookies();
 
-  const jwt = await createJWT(userId, sessionId, twoFactorVerified, expiresAt);
+  const jwt = await createJWT(userId, sessionId, expiresAt);
 
   cookieStore.set(SESSION_COOKIE_NAME, `${token}.${jwt}`, {
     httpOnly: true,
@@ -137,14 +134,12 @@ export const getCurrentSession = cache(
 export async function createJWT(
   userId: number,
   sessionId: string,
-  twoFactorVerified: boolean,
   expiresAt: Date
 ): Promise<string> {
   const header = JSON.stringify({ alg: joseAlgorithmHS256, typ: 'JWT' });
   const payload = JSON.stringify({
     userId,
     sessionId,
-    twoFactorVerified,
     exp: Math.floor(expiresAt.getTime() / 1000),
     iat: Math.floor(Date.now() / 1000),
     // TODO: iss: 'gajd.dev',
@@ -230,23 +225,13 @@ export async function getSessionToken(): Promise<string | undefined> {
   return cookieStore.get(SESSION_COOKIE_NAME)?.value;
 }
 
-export async function setSession(userId: number, flags: SessionFlags) {
+export async function setSession(userId: number) {
   const token = await generateSessionToken();
-  const session = await createSession(token, userId, flags);
-  await setSessionTokenCookie(
-    token,
-    session.expiresAt,
-    userId,
-    session.id,
-    flags.twoFactorVerified
-  );
+  const session = await createSession(token, userId);
+  await setSessionTokenCookie(token, session.expiresAt, userId, session.id);
 }
 
-export interface SessionFlags {
-  twoFactorVerified: boolean;
-}
-
-export interface Session extends SessionFlags {
+export interface Session {
   id: string;
   expiresAt: Date;
   userId: number;
@@ -264,6 +249,5 @@ export interface SessionCookie {
 export interface SessionJWTPayload {
   userId: number;
   sessionId: string;
-  twoFactorVerified: boolean;
   exp?: number;
 }

@@ -83,10 +83,7 @@ export async function loginAction(
 
   throttler.reset(user.id);
 
-  const sessionFlags: SessionFlags = {
-    twoFactorVerified: false,
-  };
-  await setSession(user.id, sessionFlags);
+  await setSession(user.id);
 
   // if (!user.emailVerified) return redirect('/verify-email');
   return redirect('/');

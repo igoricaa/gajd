@@ -104,10 +104,6 @@ export async function signUpAction(
     user.email
   );
 
-  const sessionFlags: SessionFlags = {
-    twoFactorVerified: false,
-  };
-
   await Promise.all([
     sendVerificationEmail(
       emailVerificationRequest.email,

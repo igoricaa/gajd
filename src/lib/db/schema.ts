@@ -38,7 +38,6 @@ export const sessions = pgTable('sessions', {
     withTimezone: true,
     mode: 'date',
   }).notNull(),
-  twoFactorVerified: boolean('two_factored_verified').notNull().default(false),
 });
 
 export const emailVerificationRequest = pgTable('email_verification_request', {
@@ -68,7 +67,6 @@ export const passwordResetSession = pgTable('password_reset_session', {
     mode: 'date',
   }).notNull(),
   emailVerified: boolean('email_verified').notNull().default(false),
-  twoFactorVerified: boolean('two_factor_verified').notNull().default(false),
 });
 
 export type User = InferSelectModel<typeof users>;

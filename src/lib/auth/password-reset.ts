@@ -3,7 +3,7 @@
 import { encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '../db';
 import { passwordResetSession, User, users } from '../db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { generateRandomOTP } from './utils';
 import { cookies } from 'next/headers';
@@ -21,7 +21,6 @@ export async function createPasswordResetSession(
     expiresAt: new Date(Date.now() + 1000 * 60 * 10),
     code: await generateRandomOTP(),
     emailVerified: false,
-    twoFactorVerified: false,
   };
 
   await db.insert(passwordResetSession).values({
@@ -49,7 +48,6 @@ export async function validatePasswordResetSessionToken(
       code: passwordResetSession.code,
       expiresAt: passwordResetSession.expiresAt,
       emailVerified: passwordResetSession.emailVerified,
-      twoFactorVerified: passwordResetSession.twoFactorVerified,
       // User fields
       user: {
         id: users.id,
@@ -158,7 +156,6 @@ export interface PasswordResetSession {
   expiresAt: Date;
   code: string;
   emailVerified: boolean;
-  twoFactorVerified: boolean;
 }
 
 export type PasswordResetSessionValidationResult =

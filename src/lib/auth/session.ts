@@ -32,19 +32,11 @@ export async function generateSessionToken(): Promise<string> {
   return token;
 }
 
-export async function createSession(
-  userId: number,
-  flags: SessionFlags
-): Promise<Session> {
+export async function createSession(userId: number): Promise<Session> {
   const token = await generateSessionToken();
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
-  const jwt = await createJWT(
-    userId,
-    sessionId,
-    flags.twoFactorVerified,
-    expiresAt
-  );
+  const jwt = await createJWT(userId, sessionId, expiresAt);
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, jwt, {
@@ -59,7 +51,6 @@ export async function createSession(
     id: sessionId,
     userId,
     expiresAt,
-    twoFactorVerified: flags.twoFactorVerified,
   };
 
   // await db.insert(sessions).values(session);
@@ -143,11 +134,10 @@ export async function deleteSession() {
 //   expiresAt: Date,
 //   userId: number,
 //   sessionId: string,
-//   twoFactorVerified: boolean
 // ): Promise<void> {
 //   const cookieStore = await cookies();
 
-//   const jwt = await createJWT(userId, sessionId, twoFactorVerified, expiresAt);
+//   const jwt = await createJWT(userId, sessionId, expiresAt);
 
 //   cookieStore.set(SESSION_COOKIE_NAME, `${token}.${jwt}`, {
 //     httpOnly: true,
@@ -173,14 +163,12 @@ export async function deleteSession() {
 export async function createJWT(
   userId: number,
   sessionId: string,
-  twoFactorVerified: boolean,
   expiresAt: Date
 ): Promise<string> {
   const header = JSON.stringify({ alg: joseAlgorithmHS256, typ: 'JWT' });
   const payload = JSON.stringify({
     userId,
     sessionId,
-    twoFactorVerified,
     exp: Math.floor(expiresAt.getTime() / 1000),
     iat: Math.floor(Date.now() / 1000),
     // TODO: iss: 'gajd.dev',
@@ -266,11 +254,7 @@ function validateClaims(payload: object) {
 //   return cookieStore.get(SESSION_COOKIE_NAME)?.value;
 // }
 
-export interface SessionFlags {
-  twoFactorVerified: boolean;
-}
-
-export interface Session extends SessionFlags {
+export interface Session {
   id: string;
   expiresAt: Date;
   userId: number;
@@ -286,6 +270,5 @@ export interface SessionCookie {
 export interface SessionJWTPayload {
   userId: number;
   sessionId: string;
-  twoFactorVerified: boolean;
   exp?: number;
 }

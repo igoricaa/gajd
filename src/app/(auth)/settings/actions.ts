@@ -71,12 +71,9 @@ export async function updatePasswordAction(
   }
 
   passwordUpdateBucket.reset(session.id);
-  invalidateUserSessions(user.id);
+  // invalidateUserSessions(user.id);
   await updateUserPassword(user.id, newPassword);
 
-  const sessionFlags: SessionFlags = {
-    twoFactorVerified: session.twoFactorVerified,
-  };
   await setSession(user.id, sessionFlags);
 
   return {

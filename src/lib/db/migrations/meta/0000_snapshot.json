@@ -45,12 +45,8 @@
           "name": "email_verification_request_user_id_users_id_fk",
           "tableFrom": "email_verification_request",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -60,16 +56,12 @@
         "email_verification_request_user_id_unique": {
           "name": "email_verification_request_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         },
         "email_verification_request_email_unique": {
           "name": "email_verification_request_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -116,13 +108,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "two_factor_verified": {
-          "name": "two_factor_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         }
       },
       "indexes": {},
@@ -131,12 +116,8 @@
           "name": "password_reset_session_user_id_users_id_fk",
           "tableFrom": "password_reset_session",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -146,9 +127,7 @@
         "password_reset_session_user_id_unique": {
           "name": "password_reset_session_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       },
       "policies": {},
@@ -176,13 +155,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
-        },
-        "two_factored_verified": {
-          "name": "two_factored_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         }
       },
       "indexes": {},
@@ -191,12 +163,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -310,23 +278,17 @@
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "users_github_id_unique": {
           "name": "users_github_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "github_id"
-          ]
+          "columns": ["github_id"]
         }
       },
       "policies": {},
@@ -338,19 +300,12 @@
     "public.type": {
       "name": "type",
       "schema": "public",
-      "values": [
-        "email",
-        "google",
-        "github"
-      ]
+      "values": ["email", "google", "github"]
     },
     "public.role": {
       "name": "role",
       "schema": "public",
-      "values": [
-        "member",
-        "admin"
-      ]
+      "values": ["member", "admin"]
     }
   },
   "schemas": {},
