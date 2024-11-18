@@ -1,15 +1,14 @@
-import { getCurrentSession } from '@/lib/auth/session';
 import { SignUpForm } from './components';
 import Link from 'next/link';
 
 import { redirect } from 'next/navigation';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 
 export default async function Page() {
-  if (!(await globalGETRateLimit())) {
-    return AUTH_ERROR_MESSAGES.RATE_LIMIT;
-  }
+  // if (!(await globalGETRateLimit())) {
+  //   return AUTH_ERROR_MESSAGES.RATE_LIMIT;
+  // }
 
   // const {user} = getUser();
 

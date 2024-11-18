@@ -1,5 +1,4 @@
-import { getUserEmailVerificationRequestFromRequest } from '@/lib/auth/email-verification';
-import { getCurrentSession } from '@/lib/auth/session';
+import { getUserEmailVerificationRequestFromRequest } from '@/lib/data/email-verification';
 import { redirect } from 'next/navigation';
 import {
   EmailVerificationForm,
@@ -7,14 +6,21 @@ import {
 } from './components';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
 import Link from 'next/link';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
+import { verifySession } from '@/lib/auth/session';
+import { getUser } from '@/lib/data/user';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  const { user } = await getCurrentSession();
+  const { userId } = await verifySession();
+  if (userId === null) {
+    return redirect('/sign-in');
+  }
+
+  const user = await getUser(userId);
   if (user === null) {
     return redirect('/sign-in');
   }

@@ -1,20 +1,20 @@
 'use server';
 
-import { checkEmailAvailability, verifyEmailInput } from '@/lib/auth/email';
+import { checkEmailAvailability, verifyEmailInput } from '@/lib/data/email';
 import {
   createEmailVerificationRequest,
   sendVerificationEmail,
   setEmailVerificationRequestCookie,
-} from '@/lib/auth/email-verification';
+} from '@/lib/data/email-verification';
 import { verifyPasswordStrength } from '@/lib/auth/password';
-import { SessionFlags, setSession } from '@/lib/auth/session';
-import { createUser, verifyUsernameInput } from '@/lib/auth/user';
+import { createUser, verifyUsernameInput } from '@/lib/data/user';
 import { signUpIpBucket } from '@/lib/rate-limit/config';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { createSession } from '@/lib/auth/session';
 
 interface SignUpInput {
   email: string;
@@ -110,8 +110,7 @@ export async function signUpAction(
       emailVerificationRequest.code
     ),
     setEmailVerificationRequestCookie(emailVerificationRequest),
-
-    setSession(user.id, sessionFlags),
+    createSession(user.id),
   ]);
 
   return redirect('/');

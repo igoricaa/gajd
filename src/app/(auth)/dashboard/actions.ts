@@ -1,13 +1,10 @@
 'use server';
 
-import {
-  getCurrentSession,
-  invalidateSession,
-  deleteSessionTokenCookie,
-} from '@/lib/auth/session';
+import { verifySession } from '@/lib/auth/session';
+import { deleteSession } from '@/lib/auth/session';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 import { redirect } from 'next/navigation';
 
 export async function signOut(): Promise<ActionResult> {
@@ -17,15 +14,14 @@ export async function signOut(): Promise<ActionResult> {
     };
   }
 
-  const { session } = await getCurrentSession();
-  if (session === null) {
+  const { userId } = await verifySession();
+  if (!userId) {
     return {
       message: AUTH_ERROR_MESSAGES.UNAUTHORIZED,
     };
   }
 
-  await invalidateSession(session.id);
-  await deleteSessionTokenCookie();
+  await deleteSession();
 
   return redirect('/sign-in');
 }

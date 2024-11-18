@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyJWT, type SessionJWTPayload } from '@/lib/auth/session';
+import {
+  globalGETRateLimit,
+  globalPOSTRateLimit,
+} from '@/lib/rate-limit/request';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 
 const PUBLIC_ROUTES = new Set(['/sign-in', '/sign-up', '/', '/reset-password']);
 const AUTH_ROUTES = new Set(['/dashboard', '/settings']);
 const API_ROUTES = new Set(['/api']);
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
+  if (request.method === 'POST' && !(await globalPOSTRateLimit())) {
+    return NextResponse.json(
+      { error: AUTH_ERROR_MESSAGES.RATE_LIMIT },
+      { status: 429 }
+    );
+  }
+  if (!(await globalGETRateLimit())) {
+    return NextResponse.json(
+      { error: AUTH_ERROR_MESSAGES.RATE_LIMIT },
+      { status: 429 }
+    );
+  }
+
   const { pathname } = request.nextUrl;
-  debugger;
+
   const isAuthRoute =
     AUTH_ROUTES.has(pathname) || pathname.startsWith('/dashboard');
   const isPublicRoute = PUBLIC_ROUTES.has(pathname);

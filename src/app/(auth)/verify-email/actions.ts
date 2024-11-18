@@ -7,16 +7,16 @@ import {
   deleteUserEmailVerificationRequest,
   deleteEmailVerificationRequestCookie,
   setEmailVerificationRequestCookie,
-} from '@/lib/auth/email-verification';
+} from '@/lib/data/email-verification';
 import { invalidateUserPasswordResetSessions } from '@/lib/auth/password-reset';
-import { getCurrentSession } from '@/lib/auth/session';
-import { updateUserEmailAndSetEmailAsVerified } from '@/lib/auth/user';
+import { getUser, updateUserEmailAndSetEmailAsVerified } from '@/lib/data/user';
 import { ExpiringTokenBucket } from '@/lib/rate-limit/rate-limit';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { sendVerificationEmailBucket } from '@/lib/rate-limit/config';
 import { ActionResult } from '@/lib/types';
 import { redirect } from 'next/navigation';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
+import { verifySession } from '@/lib/auth/session';
 
 const bucket = new ExpiringTokenBucket<number>(5, 60 * 30);
 
@@ -30,14 +30,15 @@ export async function verifyEmailAction(
     };
   }
 
-  const { session, user } = await getCurrentSession();
+  const { userId } = await verifySession();
+  if (userId === null) return redirect('/sign-in');
 
-  if (session === null) {
+  if (userId === null) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (!bucket.check(user.id, 1)) {
+  if (!bucket.check(userId, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
@@ -62,7 +63,7 @@ export async function verifyEmailAction(
     };
   }
 
-  if (!bucket.consume(user.id, 1)) {
+  if (!bucket.consume(userId, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
@@ -90,9 +91,9 @@ export async function verifyEmailAction(
   }
 
   await Promise.all([
-    deleteUserEmailVerificationRequest(user.id),
-    invalidateUserPasswordResetSessions(user.id),
-    updateUserEmailAndSetEmailAsVerified(user.id, verificationRequest.email),
+    deleteUserEmailVerificationRequest(userId),
+    invalidateUserPasswordResetSessions(userId),
+    updateUserEmailAndSetEmailAsVerified(userId, verificationRequest.email),
     deleteEmailVerificationRequestCookie(),
   ]);
 
@@ -106,15 +107,15 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
     };
   }
 
-  const { session, user } = await getCurrentSession();
+  const { userId } = await verifySession();
 
-  if (session === null) {
+  if (userId === null) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
 
-  if (!sendVerificationEmailBucket.check(user.id, 1)) {
+  if (!sendVerificationEmailBucket.check(userId, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
@@ -122,12 +123,19 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
 
   let verificationRequest = await getUserEmailVerificationRequestFromRequest();
   if (verificationRequest === null) {
+    const user = await getUser(userId);
+    if (user === null) {
+      return {
+        message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
+      };
+    }
+
     if (user.emailVerified) {
       return {
         message: AUTH_ERROR_MESSAGES.FORBIDDEN,
       };
     }
-    if (!sendVerificationEmailBucket.consume(user.id, 1)) {
+    if (!sendVerificationEmailBucket.consume(userId, 1)) {
       return {
         message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
       };
@@ -138,14 +146,14 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
       user.email
     );
   } else {
-    if (!sendVerificationEmailBucket.consume(user.id, 1)) {
+    if (!sendVerificationEmailBucket.consume(userId, 1)) {
       return {
         message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
       };
     }
 
     verificationRequest = await createEmailVerificationRequest(
-      user.id,
+      userId,
       verificationRequest.email
     );
   }

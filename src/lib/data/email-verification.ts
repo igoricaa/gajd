@@ -4,10 +4,10 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { emailVerificationRequest } from '../db/schema';
 import { encodeBase32 } from '@oslojs/encoding';
-import { generateRandomOTP } from './utils';
+import { generateRandomOTP } from '../auth/utils';
 import { cookies } from 'next/headers';
-import { getCurrentSession } from './session';
 import { EmailVerificationRequest } from '../types';
+import { verifySession } from '../auth/session';
 
 export async function getUserEmailVerificationRequest(
   userId: number,
@@ -93,8 +93,8 @@ export async function setEmailVerificationRequestCookie(
 }
 
 export async function getUserEmailVerificationRequestFromRequest(): Promise<EmailVerificationRequest | null> {
-  const { user } = await getCurrentSession();
-  if (user === null) {
+  const { userId } = await verifySession();
+  if (userId === null) {
     return null;
   }
 
@@ -103,7 +103,7 @@ export async function getUserEmailVerificationRequestFromRequest(): Promise<Emai
     return null;
   }
 
-  const request = await getUserEmailVerificationRequest(user.id, id);
+  const request = await getUserEmailVerificationRequest(userId, id);
   if (request === null) {
     return null;
   }

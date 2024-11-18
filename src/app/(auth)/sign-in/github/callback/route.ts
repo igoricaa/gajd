@@ -1,6 +1,6 @@
 import { github } from '@/lib/auth/oauth';
-import { SessionFlags, setSession } from '@/lib/auth/session';
-import { getUserByGithubId, createUserGithub } from '@/lib/auth/user';
+import { createSession } from '@/lib/auth/session';
+import { getUserByGithubId, createUserGithub } from '@/lib/data/user';
 
 import { OAuth2Tokens } from 'arctic';
 import { cookies } from 'next/headers';
@@ -47,7 +47,7 @@ export async function GET(request: Request): Promise<Response> {
   const existingUser = await getUserByGithubId(githubUserId);
 
   if (existingUser !== null) {
-    await setSession(existingUser.id, sessionFlags);
+    await createSession(existingUser.id);
 
     return Response.redirect('/');
   }
@@ -58,7 +58,7 @@ export async function GET(request: Request): Promise<Response> {
     githubEmail
   );
 
-  await setSession(user.id, sessionFlags);
+  await createSession(user.id);
 
   return Response.redirect('/');
 }

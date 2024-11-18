@@ -6,11 +6,12 @@ import {
   invalidateUserPasswordResetSessions,
   validatePasswordResetSessionRequest,
 } from '@/lib/auth/password-reset';
-import { createSession, deleteSession, SessionFlags } from '@/lib/auth/session';
-import { updateUserPassword } from '@/lib/auth/user';
+import { createSession } from '@/lib/auth/session';
+import { deleteSession } from '@/lib/auth/session';
+import { updateUserPassword } from '@/lib/data/user';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 import { redirect } from 'next/navigation';
 
 export async function resetPasswordAction(
@@ -31,9 +32,7 @@ export async function resetPasswordAction(
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (
-    !passwordResetSession.emailVerified
-  ) {
+  if (!passwordResetSession.emailVerified) {
     return {
       message: AUTH_ERROR_MESSAGES.FORBIDDEN,
     };

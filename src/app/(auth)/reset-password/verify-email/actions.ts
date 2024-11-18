@@ -4,11 +4,11 @@ import {
   setPasswordResetSessionAsEmailVerified,
   validatePasswordResetSessionRequest,
 } from '@/lib/auth/password-reset';
-import { setUserAsEmailVerifiedIfEmailMatches } from '@/lib/auth/user';
+import { setUserAsEmailVerifiedIfEmailMatches } from '@/lib/data/user';
 import { ExpiringTokenBucket } from '@/lib/rate-limit/rate-limit';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 import { redirect } from 'next/navigation';
 
 const emailVerificationBucket = new ExpiringTokenBucket<number>(5, 60 * 30);
@@ -24,6 +24,7 @@ export async function verifyPasswordResetEmailAction(
   }
 
   const { session } = await validatePasswordResetSessionRequest();
+  
   if (session === null) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,

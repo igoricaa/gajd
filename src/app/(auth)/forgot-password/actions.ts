@@ -1,6 +1,6 @@
 'use server';
 
-import { verifyEmailInput } from '@/lib/auth/email';
+import { verifyEmailInput } from '@/lib/data/email';
 import {
   createPasswordResetSession,
   invalidateUserPasswordResetSessions,
@@ -8,11 +8,11 @@ import {
   setPasswordResetSessionTokenCookie,
 } from '@/lib/auth/password-reset';
 import { generateSessionToken } from '@/lib/auth/session';
-import { getUserFromEmail } from '@/lib/auth/user';
+import { getUserFromEmail } from '@/lib/data/user';
 import { RefillingTokenBucket } from '@/lib/rate-limit/rate-limit';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ActionResult } from '@/lib/types';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 

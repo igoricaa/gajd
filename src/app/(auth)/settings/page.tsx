@@ -1,22 +1,21 @@
-import { getCurrentSession } from '@/lib/auth/session';
 import { Link } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import {
-  UpdateEmailForm,
-  UpdatePasswordForm,
-} from './components';
+import { UpdateEmailForm, UpdatePasswordForm } from './components';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
+import { verifySession } from '@/lib/auth/session';
+import { getUser } from '@/lib/data/user';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  const { session, user } = await getCurrentSession();
-  if (session === null) {
-    return redirect('/sign-in');
-  }
+  const { userId } = await verifySession();
+  if (userId === null) return redirect('/sign-in');
+
+  const user = await getUser(userId as number);
+  if (user === null) return redirect('/sign-in');
 
   return (
     <>

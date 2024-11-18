@@ -1,17 +1,16 @@
 'use server';
 
-import { verifyEmailInput, checkEmailAvailability } from '@/lib/auth/email';
+import { verifyEmailInput, checkEmailAvailability } from '@/lib/data/email';
 import {
   createEmailVerificationRequest,
   sendVerificationEmail,
   setEmailVerificationRequestCookie,
-} from '@/lib/auth/email-verification';
+} from '@/lib/data/email-verification';
 import {
   verifyPasswordStrength,
   verifyPasswordHash,
 } from '@/lib/auth/password';
-import { getCurrentSession, SessionFlags } from '@/lib/auth/session';
-import { getUserPasswordHash, updateUserPassword } from '@/lib/auth/user';
+import { getUserPasswordHash, updateUserPassword } from '@/lib/data/user';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import {
   passwordUpdateBucket,
@@ -19,7 +18,8 @@ import {
 } from '@/lib/rate-limit/config';
 import { ActionResult } from '@/lib/types';
 import { redirect } from 'next/navigation';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
+import { createSession, verifySession } from '@/lib/auth/session';
 
 export async function updatePasswordAction(
   _prev: ActionResult,
@@ -31,13 +31,14 @@ export async function updatePasswordAction(
     };
   }
 
-  const { session, user } = await getCurrentSession();
-  if (session === null) {
+  const { sessionId, userId } = await verifySession();
+
+  if (!userId) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (!passwordUpdateBucket.check(session.id, 1)) {
+  if (!passwordUpdateBucket.check(sessionId as string, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
@@ -56,13 +57,13 @@ export async function updatePasswordAction(
       message: AUTH_ERROR_MESSAGES.WEAK_PASSWORD,
     };
   }
-  if (!passwordUpdateBucket.consume(session.id, 1)) {
+  if (!passwordUpdateBucket.consume(sessionId as string, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
-  const passwordHash = await getUserPasswordHash(user.id);
+  const passwordHash = await getUserPasswordHash(userId as number);
   const validPassword = await verifyPasswordHash(passwordHash, password);
   if (!validPassword) {
     return {
@@ -70,11 +71,11 @@ export async function updatePasswordAction(
     };
   }
 
-  passwordUpdateBucket.reset(session.id);
+  passwordUpdateBucket.reset(sessionId as string);
   // invalidateUserSessions(user.id);
-  await updateUserPassword(user.id, newPassword);
+  await updateUserPassword(userId as number, newPassword);
 
-  await setSession(user.id, sessionFlags);
+  await createSession(userId as number);
 
   return {
     message: AUTH_ERROR_MESSAGES.PASSWORD_UPDATED,
@@ -91,13 +92,14 @@ export async function updateEmailAction(
     };
   }
 
-  const { session, user } = await getCurrentSession();
-  if (session === null) {
+  const { userId } = await verifySession();
+
+  if (!userId) {
     return {
       message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
     };
   }
-  if (!sendVerificationEmailBucket.check(user.id, 1)) {
+  if (!sendVerificationEmailBucket.check(userId as number, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
@@ -123,14 +125,14 @@ export async function updateEmailAction(
       message: AUTH_ERROR_MESSAGES.EMAIL_IN_USE,
     };
   }
-  if (!sendVerificationEmailBucket.consume(user.id, 1)) {
+  if (!sendVerificationEmailBucket.consume(userId as number, 1)) {
     return {
       message: AUTH_ERROR_MESSAGES.RATE_LIMIT,
     };
   }
 
   const verificationRequest = await createEmailVerificationRequest(
-    user.id,
+    userId as number,
     email
   );
   await sendVerificationEmail(

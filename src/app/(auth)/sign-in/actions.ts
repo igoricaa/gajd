@@ -1,15 +1,15 @@
 'use server';
 
-import { verifyEmailInput } from '@/lib/auth/email';
+import { verifyEmailInput } from '@/lib/data/email';
 import { verifyPasswordHash } from '@/lib/auth/password';
-import { SessionFlags, setSession } from '@/lib/auth/session';
-import { getUserFromEmail, getUserPasswordHash } from '@/lib/auth/user';
+import { getUserFromEmail, getUserPasswordHash } from '@/lib/data/user';
 import { globalPOSTRateLimit } from '@/lib/rate-limit/request';
 import { ipBucket, throttler } from '@/lib/rate-limit/config';
 import { ActionResult } from '@/lib/types';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
+import { createSession } from '@/lib/auth/session';
 
 const getClientIP = async (): Promise<string | null> => {
   const headersList = await headers();
@@ -61,7 +61,7 @@ export async function loginAction(
   if (validationError) return validationError;
 
   const user = await getUserFromEmail(email as string);
-  if (!user) {
+  if (user === null) {
     return { message: AUTH_ERROR_MESSAGES.ACCOUNT_NOT_FOUND };
   }
 
@@ -83,7 +83,7 @@ export async function loginAction(
 
   throttler.reset(user.id);
 
-  await setSession(user.id);
+  await createSession(user.id);
 
   // if (!user.emailVerified) return redirect('/verify-email');
   return redirect('/');

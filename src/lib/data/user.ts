@@ -3,7 +3,8 @@
 import { eq, InferInsertModel } from 'drizzle-orm';
 import { db } from '../db';
 import { User, users } from '../db/schema';
-import { hashPassword } from './password';
+import { hashPassword } from '../auth/password';
+import { cache } from 'react';
 
 export async function createUser(
   email: string,
@@ -48,7 +49,24 @@ export async function createUserGithub(
   return result;
 }
 
+export const getUser = cache(async (userId: number) => {
+  if (!userId) return null;
+
+  try {
+    const data = await db.select().from(users).where(eq(users.id, userId));
+
+    const user: User = data[0];
+
+    return user;
+  } catch (error) {
+    console.log('Failed to fetch user');
+    return null;
+  }
+});
+
 export async function getUserFromEmail(email: string): Promise<User | null> {
+  if (!email) return null;
+
   const user = await db
     .select()
     .from(users)
@@ -65,6 +83,8 @@ export async function getUserFromEmail(email: string): Promise<User | null> {
 export async function getUserByGithubId(
   githubId: string
 ): Promise<User | null> {
+  if (!githubId) return null;
+
   const user = await db
     .select()
     .from(users)
@@ -79,6 +99,8 @@ export async function getUserByGithubId(
 }
 
 export async function getUserPasswordHash(userId: number): Promise<string> {
+  if (!userId) throw new Error('Invalid user ID');
+
   const passwordHash = await db
     .select({ passwordHash: users.passwordHash })
     .from(users)
@@ -102,6 +124,8 @@ export async function updateUserEmailAndSetEmailAsVerified(
   userId: number,
   email: string
 ): Promise<void> {
+  if (!userId || !email) return;
+
   await db
     .update(users)
     .set({ emailVerified: true, email })
@@ -112,6 +136,8 @@ export async function setUserAsEmailVerifiedIfEmailMatches(
   userId: number,
   email: string
 ): Promise<boolean> {
+  if (!userId || !email) return false;
+
   const result = await db
     .update(users)
     .set({ emailVerified: true })
@@ -125,6 +151,8 @@ export async function updateUserPassword(
   userId: number,
   password: string
 ): Promise<void> {
+  if (!userId || !password) return;
+
   const passwordHash = await hashPassword(password);
   await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
 }

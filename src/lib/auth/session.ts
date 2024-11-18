@@ -19,6 +19,8 @@ import {
 
 const SESSION_COOKIE_NAME = 'session';
 const JWT_SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET_KEY);
+const SESSION_RENEWAL_THRESHOLD = 1000 * 60 * 60 * 24 * 15; // 15 days
+const SESSION_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 export async function generateSessionToken(): Promise<string> {
   const bytes = new Uint8Array(32);
@@ -31,25 +33,15 @@ export async function generateSessionToken(): Promise<string> {
 export async function createSession(userId: number): Promise<Session> {
   const token = await generateSessionToken();
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
+  const expiresAt = new Date(Date.now() + SESSION_DURATION);
   const jwt = await createJWT(userId, sessionId, expiresAt);
-
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, jwt, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    expires: expiresAt,
-    path: '/',
-  });
+  await saveSessionCookie(jwt, expiresAt);
 
   const session: Session = {
     id: sessionId,
     userId,
     expiresAt,
   };
-
-  // await db.insert(sessions).values(session);
 
   return session;
 }
@@ -61,18 +53,50 @@ export const verifySession = cache(
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
 
     if (sessionCookie === null) {
-      return { userId: null, isAuth: false };
+      return { sessionId: null, userId: null };
     }
 
     const jwtPayload = await verifyJWT(sessionCookie);
 
     if (jwtPayload === null) {
-      return { userId: null, isAuth: false };
+      return { sessionId: null, userId: null };
     }
 
-    return { userId: jwtPayload.userId, isAuth: true };
+    let expirationDate = new Date(jwtPayload.exp * 1000);
+
+    if (Date.now() >= expirationDate.getTime()) {
+      await deleteSession();
+      return { sessionId: null, userId: null };
+    }
+    if (Date.now() >= expirationDate.getTime() - SESSION_RENEWAL_THRESHOLD) {
+      expirationDate = new Date(Date.now() + SESSION_DURATION);
+
+      const jwt = await createJWT(
+        jwtPayload.userId,
+        jwtPayload.sessionId,
+        expirationDate
+      );
+
+      await saveSessionCookie(jwt, expirationDate);
+    }
+
+    return {
+      sessionId: jwtPayload.sessionId,
+      userId: jwtPayload.userId,
+    };
   }
 );
+
+async function saveSessionCookie(jwt: string, expiresAt: Date) {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE_NAME, jwt, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    expires: expiresAt,
+    path: '/',
+  });
+}
 
 export async function deleteSession() {
   const cookieStore = await cookies();
@@ -182,8 +206,8 @@ export interface Session {
 }
 
 export type SessionValidationResult = {
+  sessionId: string | null;
   userId: number | null;
-  isAuth: boolean;
 };
 
 export interface SessionCookie {
@@ -194,5 +218,5 @@ export interface SessionCookie {
 export interface SessionJWTPayload {
   userId: number;
   sessionId: string;
-  exp?: number;
+  exp: number;
 }

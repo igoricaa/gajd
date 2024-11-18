@@ -1,17 +1,19 @@
-import { getCurrentSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import SignOutButton from './signout-button';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
+import { verifySession } from '@/lib/auth/session';
+import { getUser } from '@/lib/data/user';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  const { session, user } = await getCurrentSession();
+  const { userId } = await verifySession();
+  const user = await getUser(userId as number);
 
-  if (session === null || user === null) {
+  if (user === null) {
     return redirect('/sign-in');
   }
   if (!user.emailVerified) {

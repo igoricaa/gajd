@@ -1,7 +1,7 @@
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
 import { ForgotPasswordForm } from './components';
 import Link from 'next/link';
-import { AUTH_ERROR_MESSAGES } from '@/lib/utils';
+import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
