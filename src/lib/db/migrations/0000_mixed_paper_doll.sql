@@ -1,0 +1,69 @@
+-- CREATE TYPE "public"."type" AS ENUM('email', 'google', 'github');--> statement-breakpoint
+-- CREATE TYPE "public"."role" AS ENUM('member', 'admin');--> statement-breakpoint
+-- CREATE TABLE IF NOT EXISTS "email_verification_request" (
+-- 	"id" text PRIMARY KEY NOT NULL,
+-- 	"user_id" integer NOT NULL,
+-- 	"email" varchar(255) NOT NULL,
+-- 	"code" varchar(255) NOT NULL,
+-- 	"expires_at" timestamp with time zone NOT NULL,
+-- 	CONSTRAINT "email_verification_request_user_id_unique" UNIQUE("user_id"),
+-- 	CONSTRAINT "email_verification_request_email_unique" UNIQUE("email")
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE IF NOT EXISTS "password_reset_session" (
+-- 	"id" text PRIMARY KEY NOT NULL,
+-- 	"user_id" integer NOT NULL,
+-- 	"email" varchar(255) NOT NULL,
+-- 	"code" varchar(255) NOT NULL,
+-- 	"expires_at" timestamp with time zone NOT NULL,
+-- 	"email_verified" boolean DEFAULT false NOT NULL,
+-- 	"two_factor_verified" boolean DEFAULT false NOT NULL,
+-- 	CONSTRAINT "password_reset_session_user_id_unique" UNIQUE("user_id")
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE IF NOT EXISTS "sessions" (
+-- 	"id" text PRIMARY KEY NOT NULL,
+-- 	"user_id" integer NOT NULL,
+-- 	"expires_at" timestamp with time zone NOT NULL,
+-- 	"two_factored_verified" boolean DEFAULT false NOT NULL
+-- );
+-- --> statement-breakpoint
+-- CREATE TABLE IF NOT EXISTS "users" (
+-- 	"id" serial PRIMARY KEY NOT NULL,
+-- 	"name" varchar(100),
+-- 	"username" varchar(255) NOT NULL,
+-- 	"age" integer,
+-- 	"email" varchar(255) NOT NULL,
+-- 	"password_hash" text NOT NULL,
+-- 	"github_id" varchar(255),
+-- 	"role" "role" DEFAULT 'member' NOT NULL USING "role"::"role",
+-- 	"account_type" "type" DEFAULT 'email' NOT NULL,
+-- 	"email_verified" boolean DEFAULT false NOT NULL,
+-- 	"registered_2fa" boolean DEFAULT false NOT NULL,
+-- 	"recovery_code" "bytea" NOT NULL,
+-- 	"totp_key" "bytea",
+-- 	"created_at" timestamp DEFAULT now() NOT NULL,
+-- 	"updated_at" timestamp DEFAULT now() NOT NULL,
+-- 	"deleted_at" timestamp,
+-- 	CONSTRAINT "users_username_unique" UNIQUE("username"),
+-- 	CONSTRAINT "users_email_unique" UNIQUE("email"),
+-- 	CONSTRAINT "users_github_id_unique" UNIQUE("github_id")
+-- );
+-- --> statement-breakpoint
+-- DO $$ BEGIN
+--  ALTER TABLE "email_verification_request" ADD CONSTRAINT "email_verification_request_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+-- EXCEPTION
+--  WHEN duplicate_object THEN null;
+-- END $$;
+-- --> statement-breakpoint
+-- DO $$ BEGIN
+--  ALTER TABLE "password_reset_session" ADD CONSTRAINT "password_reset_session_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+-- EXCEPTION
+--  WHEN duplicate_object THEN null;
+-- END $$;
+-- --> statement-breakpoint
+-- DO $$ BEGIN
+--  ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+-- EXCEPTION
+--  WHEN duplicate_object THEN null;
+-- END $$;

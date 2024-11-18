@@ -1,82 +1,72 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyJWT, type SessionJWTPayload } from '@/lib/auth/session';
 
-const protectedRoutes = ['/dashboard'];
-const publicRoutes = ['/login', '/signup', '/'];
+const PUBLIC_ROUTES = new Set(['/sign-in', '/sign-up', '/', '/reset-password']);
+const AUTH_ROUTES = new Set(['/dashboard', '/settings']);
+const API_ROUTES = new Set(['/api']);
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  // TODO: add auth here: https://www.youtube.com/watch?v=N_sUsq_y10U - middleware
-  // Basic auth validation
-  // Token presence check
-  // Public routes whitelist
-  // Basic role checks
+  const { pathname } = request.nextUrl;
+  debugger;
+  const isAuthRoute =
+    AUTH_ROUTES.has(pathname) || pathname.startsWith('/dashboard');
+  const isPublicRoute = PUBLIC_ROUTES.has(pathname);
 
-  // on the protected pages:
-  // Complex permission checks
-  // User-specific logic
-  // Feature-based access control
+  let sessionData: SessionJWTPayload | null = null;
 
-  // const path = request.nextUrl.pathname;
-  // const isProtectedRoute = protectedRoutes.includes(path);
-  // const isPublicRoute = publicRoutes.includes(path);
+  const cookieValue = request.cookies.get('session')?.value;
+  if (cookieValue) {
+    const [token, jwt] = cookieValue.split('.');
+    sessionData = await verifyJWT(jwt);
+  }
 
-  // // 3. Decrypt the session from the cookie
-  // const token = request.cookies.get('session')?.value ?? null;
-  // // const session = decrypt(token);
+  if (isAuthRoute && !sessionData?.userId) {
+    const redirectUrl = new URL('/sign-in', request.url);
+    // TODO: ima from query param, da li je to za redirekciju nakon logina?
+    redirectUrl.searchParams.set('from', pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
 
-  // // 4. Redirect to /login if the user is not authenticated
-  // if (isProtectedRoute && !session?.userId) {
-  //   return NextResponse.redirect(new URL('/login', request.nextUrl));
-  // }
+  if (isPublicRoute && sessionData?.userId) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
 
-  // // 5. Redirect to /dashboard if the user is authenticated
-  // if (
-  //   isPublicRoute &&
-  //   session?.userId &&
-  //   !request.nextUrl.pathname.startsWith('/dashboard')
-  // ) {
-  //   return NextResponse.redirect(new URL('/dashboard', request.nextUrl));
-  // }
-
-  if (request.method === 'GET') {
+  // Handle session cookie refresh for GET requests
+  if (request.method === 'GET' && cookieValue && sessionData) {
     const response = NextResponse.next();
-    const token = request.cookies.get('session')?.value ?? null;
-    if (token !== null) {
-      response.cookies.set('session', token, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 30,
-        sameSite: 'lax',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-      });
-    }
-
+    response.cookies.set('session', cookieValue, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+      sameSite: 'lax',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    });
     return response;
   }
 
-  const originHeader = request.headers.get('Origin');
-  // NOTE: You may need to use `X-Forwarded-Host` instead - vaj?
-  const hostHeader = request.headers.get('Host');
-  if (originHeader === null || hostHeader === null) {
-    return new NextResponse(null, {
-      status: 403,
-    });
-  }
+  // CSRF protection for non-GET requests
+  if (request.method !== 'GET') {
+    const origin = request.headers.get('Origin');
+    const host = request.headers.get('Host');
 
-  let origin: URL;
-  try {
-    origin = new URL(originHeader);
-  } catch (error) {
-    return new NextResponse(null, {
-      status: 403,
-    });
-  }
+    if (!origin || !host) {
+      return new NextResponse(null, { status: 403 });
+    }
 
-  if (origin.host !== hostHeader) {
-    return new NextResponse(null, {
-      status: 403,
-    });
+    try {
+      const originUrl = new URL(origin);
+      if (originUrl.host !== host) {
+        return new NextResponse(null, { status: 403 });
+      }
+    } catch {
+      return new NextResponse(null, { status: 403 });
+    }
   }
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|public/).*)'],
+};

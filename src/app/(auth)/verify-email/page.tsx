@@ -16,7 +16,7 @@ export default async function Page() {
 
   const { user } = await getCurrentSession();
   if (user === null) {
-    return redirect('/login');
+    return redirect('/sign-in');
   }
 
   // TODO: Ideally we'd sent a new verification email automatically if the previous one is expired,

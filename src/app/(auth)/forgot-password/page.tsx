@@ -12,7 +12,7 @@ export default async function Page() {
     <>
       <h1>Forgot your password?</h1>
       <ForgotPasswordForm />
-      <Link href='/login'>Sign in</Link>
+      <Link href='/sign-in'>Sign in</Link>
     </>
   );
 }

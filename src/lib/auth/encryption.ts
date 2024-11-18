@@ -2,13 +2,12 @@ import { DynamicBuffer } from '@oslojs/binary';
 import { decodeBase64 } from '@oslojs/encoding';
 import { createCipheriv, createDecipheriv } from 'crypto';
 
-const key = decodeBase64(process.env.ENCRYPTION_KEY ?? '');
+const ENCRYPTION_KEY = decodeBase64(process.env.ENCRYPTION_KEY ?? '');
 
-// TODO: use jose instead of this?
 export function encrypt(data: Uint8Array): Uint8Array {
   const iv = new Uint8Array(16);
   crypto.getRandomValues(iv);
-  const cipher = createCipheriv('aes-128-gcm', key, iv);
+  const cipher = createCipheriv('aes-128-gcm', ENCRYPTION_KEY, iv);
   const encrypted = new DynamicBuffer(0);
   encrypted.write(iv);
   encrypted.write(cipher.update(data));
@@ -27,7 +26,11 @@ export function decrypt(encrypted: Uint8Array): Uint8Array {
     throw new Error('Invalid data');
   }
 
-  const decipher = createDecipheriv('aes-128-gcm', key, encrypted.slice(0, 16));
+  const decipher = createDecipheriv(
+    'aes-128-gcm',
+    ENCRYPTION_KEY,
+    encrypted.slice(0, 16)
+  );
   decipher.setAuthTag(encrypted.slice(encrypted.byteLength - 16));
   const decrypted = new DynamicBuffer(0);
   decrypted.write(

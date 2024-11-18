@@ -10,7 +10,7 @@
 //   const session = decrypt(token);
 
 //   if (!session?.userId) {
-//     redirect('/login');
+//     redirect('/sign-in');
 //   }
 
 //   return { isAuth: true, userId: session.userId };

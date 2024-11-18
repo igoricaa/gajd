@@ -12,7 +12,7 @@ export default async function Page() {
 
   const { session, user } = await getCurrentSession();
   if (session === null) {
-    return redirect('/login');
+    return redirect('/sign-in');
   }
   if (!user.emailVerified) {
     return redirect('/verify-email');
