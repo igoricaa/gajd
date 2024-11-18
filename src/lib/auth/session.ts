@@ -4,11 +4,7 @@ import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
 } from '@oslojs/encoding';
-import { User, users } from '../db/schema';
 import { SHA256, sha256 } from '@oslojs/crypto/sha2';
-import { db } from '../db';
-import { eq } from 'drizzle-orm';
-import { sessions } from '../db/schema';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import { hmac } from '@oslojs/crypto/hmac';
@@ -58,30 +54,23 @@ export async function createSession(userId: number): Promise<Session> {
   return session;
 }
 
-export const getCurrentSession = cache(
+export const verifySession = cache(
   async (): Promise<SessionValidationResult> => {
     const cookieStore = await cookies();
+    // TODO: rename to jwt?
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
 
     if (sessionCookie === null) {
-      return { sessionId: null };
+      return { userId: null, isAuth: false };
     }
 
-    const [token, jwt] = sessionCookie.split('.');
-
-    if (token === null || jwt === null) {
-      return { sessionId: null };
-    }
-
-    // const result = await validateSessionToken(token);
-
-    const jwtPayload = await verifyJWT(jwt);
+    const jwtPayload = await verifyJWT(sessionCookie);
 
     if (jwtPayload === null) {
-      return { sessionId: null };
+      return { userId: null, isAuth: false };
     }
 
-    return { sessionId: jwtPayload.sessionId };
+    return { userId: jwtPayload.userId, isAuth: true };
   }
 );
 
@@ -89,75 +78,6 @@ export async function deleteSession() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
 }
-
-// export async function validateSessionToken(
-//   token: string
-// ): Promise<SessionValidationResult> {
-//   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-//   const result = await db
-//     .select({ user: users, session: sessions })
-//     .from(sessions)
-//     .innerJoin(users, eq(sessions.userId, users.id))
-//     .where(eq(sessions.id, sessionId));
-
-//   if (result.length < 1) {
-//     return { session: null, user: null };
-//   }
-
-//   const { user, session } = result[0];
-
-//   if (Date.now() >= session.expiresAt.getTime()) {
-//     await db.delete(sessions).where(eq(sessions.id, session.id));
-//     return { session: null, user: null };
-//   }
-//   if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 15) {
-//     session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
-//     await db
-//       .update(sessions)
-//       .set({ expiresAt: session.expiresAt })
-//       .where(eq(sessions.id, session.id));
-//   }
-
-//   return { session, user };
-// }
-
-// export async function invalidateSession(sessionId: string): Promise<void> {
-//   await db.delete(sessions).where(eq(sessions.id, sessionId));
-// }
-
-// export async function invalidateUserSessions(userId: number): Promise<void> {
-//   await db.delete(sessions).where(eq(sessions.userId, userId));
-// }
-
-// export async function setSessionTokenCookie(
-//   token: string,
-//   expiresAt: Date,
-//   userId: number,
-//   sessionId: string,
-// ): Promise<void> {
-//   const cookieStore = await cookies();
-
-//   const jwt = await createJWT(userId, sessionId, expiresAt);
-
-//   cookieStore.set(SESSION_COOKIE_NAME, `${token}.${jwt}`, {
-//     httpOnly: true,
-//     sameSite: 'lax',
-//     secure: process.env.NODE_ENV === 'production',
-//     expires: expiresAt,
-//     path: '/',
-//   });
-// }
-
-// export async function deleteSessionTokenCookie(): Promise<void> {
-//   const cookieStore = await cookies();
-//   cookieStore.set(SESSION_COOKIE_NAME, '', {
-//     httpOnly: true,
-//     sameSite: 'lax',
-//     secure: process.env.NODE_ENV === 'production',
-//     maxAge: 0,
-//     path: '/',
-//   });
-// }
 
 // JWT
 export async function createJWT(
@@ -169,6 +89,7 @@ export async function createJWT(
   const payload = JSON.stringify({
     userId,
     sessionId,
+    // TODO: math.floor? why?
     exp: Math.floor(expiresAt.getTime() / 1000),
     iat: Math.floor(Date.now() / 1000),
     // TODO: iss: 'gajd.dev',
@@ -260,7 +181,10 @@ export interface Session {
   userId: number;
 }
 
-export type SessionValidationResult = { sessionId: string | null };
+export type SessionValidationResult = {
+  userId: number | null;
+  isAuth: boolean;
+};
 
 export interface SessionCookie {
   userId: number;

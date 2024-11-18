@@ -1,17 +1,26 @@
-// import 'server-only';
+import 'server-only';
 
-// import { cookies } from 'next/headers';
-// import { decrypt } from '@/lib/auth/encryption';
-// import { redirect } from 'next/navigation';
-// import { cache } from 'react';
+import { cache } from 'react';
+import { db } from './db';
+import { User, users } from './db/schema';
+import { eq } from 'drizzle-orm';
+import { verifySession } from './auth/session';
 
-// export const verifySession = cache(async () => {
-//   const token = (await cookies()).get('session')?.value;
-//   const session = decrypt(token);
+export const getUser = cache(async () => {
+  const session = await verifySession();
+  if (!session.userId) return null;
 
-//   if (!session?.userId) {
-//     redirect('/sign-in');
-//   }
+  try {
+    const data = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.userId));
 
-//   return { isAuth: true, userId: session.userId };
-// });
+    const user: User = data[0];
+
+    return user;
+  } catch (error) {
+    console.log('Failed to fetch user');
+    return null;
+  }
+});

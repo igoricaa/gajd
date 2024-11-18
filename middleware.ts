@@ -15,10 +15,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   let sessionData: SessionJWTPayload | null = null;
 
-  const cookieValue = request.cookies.get('session')?.value;
-  if (cookieValue) {
-    const [token, jwt] = cookieValue.split('.');
-    sessionData = await verifyJWT(jwt);
+  const sessionCookie = request.cookies.get('session')?.value;
+  if (sessionCookie) {
+    sessionData = await verifyJWT(sessionCookie);
   }
 
   if (isAuthRoute && !sessionData?.userId) {
@@ -33,9 +32,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // Handle session cookie refresh for GET requests
-  if (request.method === 'GET' && cookieValue && sessionData) {
+  if (request.method === 'GET' && sessionCookie && sessionData) {
     const response = NextResponse.next();
-    response.cookies.set('session', cookieValue, {
+    response.cookies.set('session', sessionCookie, {
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
       sameSite: 'lax',
