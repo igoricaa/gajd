@@ -20,10 +20,7 @@ import {
   JWSRegisteredHeaders,
   JWTClaims,
 } from '@oslojs/jwt';
-
-const SESSION_COOKIE_NAME = 'session';
-const JWT_SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET_KEY);
-
+import { SESSION_COOKIE_NAME, JWT_SECRET_KEY } from '../constants';
 export async function generateSessionToken(): Promise<string> {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);

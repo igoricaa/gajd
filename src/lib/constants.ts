@@ -1,3 +1,10 @@
+export const SESSION_COOKIE_NAME = 'session';
+export const JWT_SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY
+);
+export const SESSION_RENEWAL_THRESHOLD = 1000 * 60 * 60 * 24 * 15; // 15 days
+export const SESSION_DURATION = 1000 * 60 * 60 * 24 * 30; // 30 days
+
 export const AUTH_ERROR_MESSAGES = {
   RATE_LIMIT: 'Too many requests',
   INVALID_FIELDS: 'Invalid or missing fields',
