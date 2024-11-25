@@ -9,11 +9,16 @@ const initialState = {
 };
 
 export default function SignOutButton() {
-  const [, action] = useActionState(signOut, initialState);
+  const [state, action] = useActionState(signOut, initialState);
 
   return (
-    <form action={action}>
-      <Button type='submit'>Sign out</Button>
-    </form>
+    <>
+      {state.message && <p>{state.message}</p>}
+      {!state.message && (
+        <form action={action}>
+          <Button type='submit'>Sign out</Button>
+        </form>
+      )}
+    </>
   );
 }

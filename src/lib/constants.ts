@@ -1,4 +1,4 @@
-export const SESSION_COOKIE_NAME = 'session';
+export const SESSION_COOKIE_NAME = 'gajd_session';
 export const JWT_SECRET_KEY = new TextEncoder().encode(
   process.env.JWT_SECRET_KEY
 );

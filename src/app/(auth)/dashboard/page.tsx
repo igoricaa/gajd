@@ -10,15 +10,20 @@ export default async function Page() {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
+  
   const { userId } = await verifySession();
+  if (!userId) {
+    return redirect('/sign-in');
+  }
+  
   const user = await getUser(userId as number);
 
   if (user === null) {
     return redirect('/sign-in');
   }
-  if (!user.emailVerified) {
-    return redirect('/verify-email');
-  }
+  // if (!user.emailVerified) {
+  //   return redirect('/verify-email');
+  // }
 
   return (
     <>

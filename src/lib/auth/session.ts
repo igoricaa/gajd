@@ -16,7 +16,12 @@ import {
   JWSRegisteredHeaders,
   JWTClaims,
 } from '@oslojs/jwt';
-import { SESSION_DURATION, SESSION_COOKIE_NAME, SESSION_RENEWAL_THRESHOLD, JWT_SECRET_KEY } from '../constants';
+import {
+  SESSION_DURATION,
+  SESSION_COOKIE_NAME,
+  SESSION_RENEWAL_THRESHOLD,
+  JWT_SECRET_KEY,
+} from '../constants';
 
 export async function generateSessionToken(): Promise<string> {
   const bytes = new Uint8Array(32);
@@ -128,11 +133,7 @@ export async function verifyJWT(
   try {
     const [header, payload, signature, signatureMessage] = parseJWT(jwt);
 
-    const expectedSignature = hmac(
-      SHA256,
-      new TextEncoder().encode(process.env.JWT_SECRET),
-      signatureMessage
-    );
+    const expectedSignature = hmac(SHA256, JWT_SECRET_KEY, signatureMessage);
 
     const validSignature =
       signature.length === expectedSignature.length &&

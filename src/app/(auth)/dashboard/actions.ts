@@ -23,5 +23,5 @@ export async function signOut(): Promise<ActionResult> {
 
   await deleteSession();
 
-  return redirect('/sign-in');
+  return redirect('/');
 }

@@ -72,7 +72,8 @@ export async function loginAction(
     return { message: AUTH_ERROR_MESSAGES.RATE_LIMIT };
   }
 
-  const passwordHash = await getUserPasswordHash(user.id);
+  // const passwordHash = await getUserPasswordHash(user.id);
+  const passwordHash = user.passwordHash;
   const validPassword = await verifyPasswordHash(
     passwordHash,
     password as string
