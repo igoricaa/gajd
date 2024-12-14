@@ -1,10 +1,11 @@
-'use server';
+import 'server-only';
 
 import { eq, InferInsertModel } from 'drizzle-orm';
 import { db } from '../db';
 import { User, users } from '../db/schema';
 import { hashPassword } from '../auth/password';
 import { cache } from 'react';
+import { verifySession } from '../auth/session';
 
 export async function createUser(
   email: string,
@@ -49,8 +50,11 @@ export async function createUserGithub(
   return result;
 }
 
-export const getUser = cache(async (userId: number) => {
-  if (!userId) return null;
+export const getUser = cache(async () => {
+  const { sessionId, userId } = await verifySession();
+  if (sessionId === null || userId === null || typeof userId !== 'number') {
+    return null;
+  }
 
   try {
     const data = await db.select().from(users).where(eq(users.id, userId));
@@ -114,7 +118,7 @@ export async function getUserPasswordHash(userId: number): Promise<string> {
   return passwordHash[0].passwordHash;
 }
 
-export async function verifyUsernameInput(username: string): Promise<boolean> {
+export function verifyUsernameInput(username: string): boolean {
   return (
     username.length > 3 && username.length < 32 && username.trim() === username
   );

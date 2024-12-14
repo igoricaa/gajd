@@ -1,5 +1,3 @@
-'use server';
-
 import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
@@ -21,7 +19,7 @@ import {
   JWTClaims,
 } from '@oslojs/jwt';
 import { SESSION_COOKIE_NAME, JWT_SECRET_KEY } from '../constants';
-export async function generateSessionToken(): Promise<string> {
+export function generateSessionToken(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   const token = encodeBase32LowerCaseNoPadding(bytes);
@@ -92,7 +90,7 @@ export async function setSessionTokenCookie(
 ): Promise<void> {
   const cookieStore = await cookies();
 
-  const jwt = await createJWT(userId, sessionId, expiresAt);
+  const jwt = createJWT(userId, sessionId, expiresAt);
 
   cookieStore.set(SESSION_COOKIE_NAME, `${token}.${jwt}`, {
     httpOnly: true,
@@ -128,11 +126,11 @@ export const getCurrentSession = cache(
 );
 
 // JWT
-export async function createJWT(
+export function createJWT(
   userId: number,
   sessionId: string,
   expiresAt: Date
-): Promise<string> {
+): string {
   const header = JSON.stringify({ alg: joseAlgorithmHS256, typ: 'JWT' });
   const payload = JSON.stringify({
     userId,
@@ -223,7 +221,7 @@ export async function getSessionToken(): Promise<string | undefined> {
 }
 
 export async function setSession(userId: number) {
-  const token = await generateSessionToken();
+  const token = generateSessionToken();
   const session = await createSession(token, userId);
   await setSessionTokenCookie(token, session.expiresAt, userId, session.id);
 }

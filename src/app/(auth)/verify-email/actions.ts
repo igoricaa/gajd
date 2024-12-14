@@ -74,7 +74,7 @@ export async function verifyEmailAction(
       verificationRequest.userId,
       verificationRequest.email
     );
-    await sendVerificationEmail(
+    sendVerificationEmail(
       verificationRequest.email,
       verificationRequest.code
     );
@@ -123,7 +123,7 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
 
   let verificationRequest = await getUserEmailVerificationRequestFromRequest();
   if (verificationRequest === null) {
-    const user = await getUser(userId);
+    const user = await getUser();
     if (user === null) {
       return {
         message: AUTH_ERROR_MESSAGES.NOT_AUTHENTICATED,
@@ -158,10 +158,7 @@ export async function resendEmailVerificationCodeAction(): Promise<ActionResult>
     );
   }
 
-  await sendVerificationEmail(
-    verificationRequest.email,
-    verificationRequest.code
-  );
+  sendVerificationEmail(verificationRequest.email, verificationRequest.code);
   await setEmailVerificationRequestCookie(verificationRequest);
 
   return {

@@ -50,7 +50,7 @@ export async function forgotPasswordAction(
       message: AUTH_ERROR_MESSAGES.INVALID_FIELDS,
     };
   }
-  if (!(await verifyEmailInput(email))) {
+  if (!(verifyEmailInput(email))) {
     return {
       message: AUTH_ERROR_MESSAGES.INVALID_EMAIL,
     };
@@ -73,7 +73,7 @@ export async function forgotPasswordAction(
   }
 
   await invalidateUserPasswordResetSessions(user.id);
-  const sessionToken = await generateSessionToken();
+  const sessionToken = generateSessionToken();
   const session = await createPasswordResetSession(
     sessionToken,
     user.id,

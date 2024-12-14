@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { UpdateEmailForm, UpdatePasswordForm } from './components';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
 import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
-import { verifySession } from '@/lib/auth/session';
 import { getUser } from '@/lib/data/user';
 
 export default async function Page() {
@@ -11,10 +10,7 @@ export default async function Page() {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  const { userId } = await verifySession();
-  if (userId === null) return redirect('/sign-in');
-
-  const user = await getUser(userId as number);
+  const user = await getUser();
   if (user === null) return redirect('/sign-in');
 
   return (

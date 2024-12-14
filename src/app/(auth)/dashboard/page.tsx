@@ -10,14 +10,7 @@ export default async function Page() {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  
-  const { userId } = await verifySession();
-  if (!userId) {
-    return redirect('/sign-in');
-  }
-  
-  const user = await getUser(userId as number);
-
+  const user = await getUser();
   if (user === null) {
     return redirect('/sign-in');
   }

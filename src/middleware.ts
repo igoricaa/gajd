@@ -4,19 +4,19 @@ import { verifyJWT, type SessionJWTPayload } from '@/lib/auth/session';
 import { checkRateLimits } from '@/lib/rate-limit/request';
 import { SESSION_COOKIE_NAME } from '@/lib/constants';
 
-export default async function middleware(request: NextRequest): Promise<NextResponse> {
+export default async function middleware(
+  request: NextRequest
+): Promise<NextResponse> {
   const rateLimitResponse = await checkRateLimits(
     request.method as 'GET' | 'POST'
   );
   if (rateLimitResponse) return rateLimitResponse;
 
-  console.log('middleware');
-
   let sessionData: SessionJWTPayload | null = null;
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (sessionCookie) {
-    sessionData = await verifyJWT(sessionCookie);
-    console.log('sessionData:', sessionData);
+    sessionData = verifyJWT(sessionCookie);
+
     if (sessionData === null) {
       return new NextResponse(null, { status: 401 });
     }
@@ -41,8 +41,6 @@ async function validateAuth(
 ): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
 
-  console.log('validateAuth', pathname);
-
   const isAuthRoute =
     ROUTES.auth.has(pathname) || pathname.startsWith('/dashboard');
   const isPublicRoute = ROUTES.public.has(pathname);
@@ -53,10 +51,10 @@ async function validateAuth(
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (isPublicRoute && sessionData?.userId) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-  
+  // if (isPublicRoute && sessionData?.userId) {
+  //   return NextResponse.redirect(new URL('/dashboard', request.url));
+  // }
+
   return null;
 }
 

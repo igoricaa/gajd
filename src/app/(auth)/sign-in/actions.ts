@@ -31,7 +31,7 @@ const validateLoginInput = async (
   if (email === '' || password === '') {
     return { message: AUTH_ERROR_MESSAGES.EMPTY_EMAIL_PASSWORD_FIELDS };
   }
-  if (!(await verifyEmailInput(email))) {
+  if (!(verifyEmailInput(email))) {
     return { message: AUTH_ERROR_MESSAGES.INVALID_EMAIL };
   }
   return null;

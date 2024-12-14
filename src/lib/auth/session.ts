@@ -1,4 +1,4 @@
-'use server';
+import 'server-only';
 
 import {
   encodeBase32LowerCaseNoPadding,
@@ -23,7 +23,7 @@ import {
   JWT_SECRET_KEY,
 } from '../constants';
 
-export async function generateSessionToken(): Promise<string> {
+export function generateSessionToken(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   const token = encodeBase32LowerCaseNoPadding(bytes);
@@ -32,10 +32,10 @@ export async function generateSessionToken(): Promise<string> {
 }
 
 export async function createSession(userId: number): Promise<Session> {
-  const token = await generateSessionToken();
+  const token = generateSessionToken();
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const expiresAt = new Date(Date.now() + SESSION_DURATION);
-  const jwt = await createJWT(userId, sessionId, expiresAt);
+  const jwt = createJWT(userId, sessionId, expiresAt);
   await saveSessionCookie(jwt, expiresAt);
 
   const session: Session = {
@@ -57,7 +57,7 @@ export const verifySession = cache(
       return { sessionId: null, userId: null };
     }
 
-    const jwtPayload = await verifyJWT(sessionCookie);
+    const jwtPayload = verifyJWT(sessionCookie);
 
     if (jwtPayload === null) {
       return { sessionId: null, userId: null };
@@ -72,7 +72,7 @@ export const verifySession = cache(
     if (Date.now() >= expirationDate.getTime() - SESSION_RENEWAL_THRESHOLD) {
       expirationDate = new Date(Date.now() + SESSION_DURATION);
 
-      const jwt = await createJWT(
+      const jwt = createJWT(
         jwtPayload.userId,
         jwtPayload.sessionId,
         expirationDate
@@ -105,11 +105,11 @@ export async function deleteSession() {
 }
 
 // JWT
-export async function createJWT(
+export function createJWT(
   userId: number,
   sessionId: string,
   expiresAt: Date
-): Promise<string> {
+): string {
   const header = JSON.stringify({ alg: joseAlgorithmHS256, typ: 'JWT' });
   const payload = JSON.stringify({
     userId,
@@ -127,9 +127,7 @@ export async function createJWT(
   return jwt;
 }
 
-export async function verifyJWT(
-  jwt: string
-): Promise<SessionJWTPayload | null> {
+export function verifyJWT(jwt: string): SessionJWTPayload | null {
   try {
     const [header, payload, signature, signatureMessage] = parseJWT(jwt);
 

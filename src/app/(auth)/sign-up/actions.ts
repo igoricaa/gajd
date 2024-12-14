@@ -43,7 +43,7 @@ async function validateSignUpInput(
     };
   }
 
-  if (!(await verifyEmailInput(email))) {
+  if (!(verifyEmailInput(email))) {
     return { message: AUTH_ERROR_MESSAGES.INVALID_EMAIL };
   }
 
@@ -51,7 +51,7 @@ async function validateSignUpInput(
     return { message: AUTH_ERROR_MESSAGES.EMAIL_IN_USE };
   }
 
-  if (!(await verifyUsernameInput(username))) {
+  if (!(verifyUsernameInput(username))) {
     return { message: AUTH_ERROR_MESSAGES.INVALID_USERNAME };
   }
 

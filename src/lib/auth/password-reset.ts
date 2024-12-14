@@ -1,5 +1,3 @@
-'use server';
-
 import { encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '../db';
 import { passwordResetSession, User, users } from '../db/schema';
@@ -19,7 +17,7 @@ export async function createPasswordResetSession(
     userId,
     email,
     expiresAt: new Date(Date.now() + 1000 * 60 * 10),
-    code: await generateRandomOTP(),
+    code: generateRandomOTP(),
     emailVerified: false,
   };
 

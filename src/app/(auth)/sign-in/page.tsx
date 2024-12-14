@@ -1,22 +1,17 @@
 import { redirect } from 'next/navigation';
 import { LoginForm } from './components';
-import Link from 'next/link';
-import { verifySession } from '@/lib/auth/session';
 import { getUser } from '@/lib/data/user';
+import Link from 'next/link';
 
 export default async function Page() {
-  const { userId } = await verifySession();
-  // TODO: extract to separate function?
-  if (userId !== null) {
-    const user = await getUser(userId as number);
-    if (user === null) return redirect('/sign-in');
-
-    // if (!user.emailVerified) {
-    //   return redirect('/verify-email');
-    // }
-
+  const user = await getUser();
+  if (user !== null) {
     return redirect('/');
   }
+
+  // if (!user.emailVerified) {
+  //   return redirect('/verify-email');
+  // }
 
   return (
     <>

@@ -1,4 +1,4 @@
-'use server';
+import 'server-only';
 
 import { and, eq } from 'drizzle-orm';
 import { db } from '../db';
@@ -47,7 +47,7 @@ export async function createEmailVerificationRequest(
   crypto.getRandomValues(idBytes);
   const id = encodeBase32(idBytes).toLowerCase();
 
-  const code = await generateRandomOTP();
+  const code = generateRandomOTP();
   const expiresAt = new Date(Date.now() + 1000 * 60 * 10);
   await db.insert(emailVerificationRequest).values({
     id,
@@ -75,7 +75,7 @@ export async function deleteUserEmailVerificationRequest(userId: number) {
     .where(eq(emailVerificationRequest.userId, userId));
 }
 
-export async function sendVerificationEmail(email: string, code: string) {
+export function sendVerificationEmail(email: string, code: string) {
   //TODO: Implement email sending
   console.log(`To ${email}: Your verification code is ${code}`);
 }

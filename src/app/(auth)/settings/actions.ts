@@ -114,7 +114,7 @@ export async function updateEmailAction(
       message: AUTH_ERROR_MESSAGES.EMPTY_EMAIL_FIELD,
     };
   }
-  if (!(await verifyEmailInput(email))) {
+  if (!(verifyEmailInput(email))) {
     return {
       message: AUTH_ERROR_MESSAGES.INVALID_EMAIL,
     };

@@ -1,10 +1,10 @@
-'use server';
+import 'server-only';
 
 import { db } from '../db';
 import { users } from '../db/schema';
 import { count, eq } from 'drizzle-orm';
 
-export async function verifyEmailInput(email: string): Promise<boolean> {
+export function verifyEmailInput(email: string): boolean {
   if (!email) return false;
 
   return /^.+@.+\..+$/.test(email) && email.length < 256;

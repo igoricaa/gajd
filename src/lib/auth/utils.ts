@@ -1,8 +1,8 @@
-'use server';
+import 'server-only';
 
 import { encodeBase32UpperCaseNoPadding } from '@oslojs/encoding';
 
-export async function generateRandomOTP(): Promise<string> {
+export function generateRandomOTP(): string {
   const bytes = new Uint8Array(5);
   crypto.getRandomValues(bytes);
   const code = encodeBase32UpperCaseNoPadding(bytes);
