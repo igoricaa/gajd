@@ -27,6 +27,12 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
       },
+      padding: {
+        side: 'var(--padding-side)',
+      },
+      maxWidth: {
+        'container-size': 'var(--max-container-width)',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

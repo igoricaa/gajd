@@ -19,6 +19,9 @@ body {
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
 
+    --padding-side: 2rem;
+    --max-container-width: 1920px;
+
     /* --background: #ffffff;
     --foreground: #0a0a0a;
     --primary: #171717;
@@ -29,8 +32,9 @@ body {
     --accent-foreground: #171717; */
   }
   .dark {
-    --background: 0 0% 11%;
+    --background: 0 0% 13%;
     --foreground: 0 0% 98%;
+    /* --bc: 145 0% 81%; */
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
