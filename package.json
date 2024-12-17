@@ -17,6 +17,7 @@
     "@oslojs/encoding": "^1.1.0",
     "@oslojs/jwt": "^0.2.0",
     "@oslojs/otp": "^1.0.0",
+    "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-slot": "^1.1.0",
     "arctic": "^2.2.2",
     "class-variance-authority": "^0.7.0",

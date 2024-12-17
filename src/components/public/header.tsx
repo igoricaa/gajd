@@ -24,7 +24,7 @@ export default async function Header() {
         </Link>
         <div className='flex items-center space-x-4'>
           <Link
-            href='/pricing'
+            href='/#pricing'
             className='text-sm font-medium text-foreground hover:text-foreground/60'
           >
             Pricing

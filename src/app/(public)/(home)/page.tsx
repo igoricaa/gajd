@@ -11,6 +11,13 @@ import StarIcon from '@/components/ui/icons/star';
 import heroImage from '@/../public/development-repo-hero.png';
 import { CloudRainIcon } from 'lucide-react';
 import FeaturesInfo from '@/components/features-info';
+import { faq, FaqItem, pricing, PricingItem } from '@/data/data';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const reviews = [
   {
@@ -42,6 +49,11 @@ export default function Home() {
       <FeaturedOn />
       <Issues />
       <Features />
+      <Story />
+      <Pricing />
+      <FAQ />
+      <Testimonials />
+      <CtaSection />
     </main>
   );
 }
@@ -201,6 +213,215 @@ const Features = () => {
         </p>
       </div>
       <FeaturesInfo />
+    </section>
+  );
+};
+
+const Story = () => {
+  return (
+    <section className='py-20'>
+      <div className='max-w-2xl mx-auto flex flex-col gap-4'>
+        <p className='text-sm text-lime-600 font-medium uppercase'>Story</p>
+        <p>Hey, it's Marc 👋</p>
+        <p>
+          In 2018, I believed I was Mark Zuckerberg, built a startup for 1 year,
+          and got 0 users...
+        </p>
+        <p>
+          A few years after my burnout, I restarted the journey differently: I
+          shipped like a madman—16 startups in 2 years. Now I'm happy and earn
+          $45,000 a month.
+        </p>
+        <p>
+          I realized I was doing the same thing over and over: set up DNS
+          records, listen to Stripe webhooks, design pricing section... So I
+          built ShipFast for 3 reasons:
+        </p>
+        <p>Save time and focus on what matters: building a business</p>
+        <p>
+          Avoid headaches like emails ending in spam or handling Stripe
+          subscriptions
+        </p>
+        <p>
+          Get profitable fast—the more you ship, the more you learn, the more
+          you earn
+        </p>
+        <p>
+          135,000+ people trust me on Twitter, Product Hunt awarded me Maker of
+          the Year 2023, and 5710 indie makers are using ShipFast to launch
+          startups quickly, scroll to see what they say.
+        </p>
+      </div>
+    </section>
+  );
+};
+
+const Pricing = () => {
+  return (
+    <section id='pricing' className='mt-20 pt-24 pb-32 bg-black'>
+      <div className='max-w-7xl mx-auto flex flex-col items-center'>
+        <p>Pricing</p>
+        <h2 className='text-5xl text-center mt-4'>
+          Find the resources you need,
+          <br />
+          in one place, now.
+        </h2>
+        <p className='mt-2'>
+          <span>$30% off</span> for the first 100 members (74 left)
+        </p>
+
+        <div className='flex flex-col lg:flex-row gap-4 w-full items-stretch justify-center mt-20'>
+          {pricing.map((item: PricingItem, index: number) => (
+            <div
+              key={item.name}
+              className={cn(
+                'flex flex-col w-full rounded-xl px-8 py-12 min-h-[500px]',
+                index === 1 ? 'bg-background/70' : 'bg-background'
+              )}
+            >
+              <p className='text-xl font-medium'>{item.name}</p>
+              <p className='flex gap-3 items-center mt-6 mb-6'>
+                <span className='text-lg text-gray-500 line-through'>
+                  ${item.price}
+                </span>
+                <span className='text-3xl font-bold'>${item.salePrice}</span>
+              </p>
+              {item.features.map((feature: string, index: number) => (
+                <p key={feature + index} className='mt-2'>
+                  {feature}
+                </p>
+              ))}
+
+              <LinkButton
+                href={item.buyLink}
+                className={cn(
+                  'mt-auto',
+                  buttonVariants({ variant: 'default', size: 'default' })
+                )}
+              >
+                Buy
+              </LinkButton>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const FAQ = () => {
+  return (
+    <section className='max-w-7xl mx-auto mt-20 py-20 flex justify-between w-full'>
+      <div className='basis-1/2'>
+        <h2 className='text-4xl whitespace-nowrap'>
+          Frequently asked questions
+        </h2>
+      </div>
+
+      <Accordion type='single' collapsible className='basis-1/2'>
+        {faq.map((item: FaqItem, index: number) => (
+          <AccordionItem
+            key={item.question + index}
+            value={`item-${index + 1}`}
+          >
+            <AccordionTrigger>{item.question}</AccordionTrigger>
+            <AccordionContent>{item.answer}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </section>
+  );
+};
+
+const Testimonials = () => {
+  return (
+    <section className='mt-20 py-20 max-w-7xl mx-auto flex flex-col items-center justify-center'>
+      <h2 className='text-5xl'>5718 makers built AI tools, SaaS, and more</h2>
+      <p>They made their first $ online, and some even quit their 9-5!</p>
+
+      <div className='flex gap-20 mt-20 justify-between'>
+        <div className='flex flex-col'>
+          <p>
+            I was able to launch my project in just one day! I made 170$
+            already.
+          </p>
+
+          <div className='flex gap-4 items-center'>
+            <div className='w-12 h-12 -mx-2 overflow-hidden border-4 border-background rounded-full'>
+              <Image
+                src={mirza}
+                alt='Mateus De Nardo'
+                width={48}
+                height={48}
+                className='object-cover'
+              />
+            </div>
+            <p>Mateus De Nardo</p>
+            <p>Built a SaaS</p>
+          </div>
+        </div>
+        <div className='flex flex-col'>
+          <p>
+            I was able to launch my project in just one day! I made 170$
+            already.
+          </p>
+
+          <div className='flex gap-4 items-center'>
+            <div className='w-12 h-12 -mx-2 overflow-hidden border-4 border-background rounded-full'>
+              <Image
+                src={mirza}
+                alt='Mateus De Nardo'
+                width={48}
+                height={48}
+                className='object-cover'
+              />
+            </div>
+            <p>Mateus De Nardo</p>
+            <p>Built a SaaS</p>
+          </div>
+        </div>
+        <div className='flex flex-col'>
+          <p>
+            I was able to launch my project in just one day! I made 170$
+            already.
+          </p>
+
+          <div className='flex gap-4 items-center'>
+            <div className='w-12 h-12 -mx-2 overflow-hidden border-4 border-background rounded-full'>
+              <Image
+                src={mirza}
+                alt='Mateus De Nardo'
+                width={48}
+                height={48}
+                className='object-cover'
+              />
+            </div>
+            <p>Mateus De Nardo</p>
+            <p>Built a SaaS</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const CtaSection = () => {
+  return (
+    <section className='mt-20 py-20 max-w-3xl mx-auto text-center'>
+      <h2 className='text-5xl'>Boost your app, launch, earn</h2>
+      <p className='text-lg'>
+        Don't waste time on Stripe subscriptions or designing a pricing
+        section...
+      </p>
+      <LinkButton
+        href='/sign-up'
+        className={cn(
+          buttonVariants({ variant: 'default', size: 'default' }),
+          'mt-12'
+        )}
+      >
+        Join the waitlist
+      </LinkButton>
     </section>
   );
 };

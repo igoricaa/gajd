@@ -76,7 +76,7 @@ body {
     @apply text-6xl font-bold mb-4;
   }
   h2 {
-    @apply text-3xl font-semibold mb-3;
+    @apply text-3xl font-semibold mb-4 md:mb-8;
   }
   h3 {
     @apply text-2xl font-medium mb-2;
