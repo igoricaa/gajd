@@ -87,5 +87,5 @@ export async function loginAction(
   await createSession(user.id);
 
   // if (!user.emailVerified) return redirect('/verify-email');
-  return redirect('/');
+  return redirect('/dashboard');
 }

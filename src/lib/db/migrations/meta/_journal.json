@@ -8,6 +8,20 @@
       "when": 1731935585656,
       "tag": "0000_mixed_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1734946388129,
+      "tag": "0001_strong_captain_flint",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1734947716355,
+      "tag": "0002_colorful_the_hunter",
+      "breakpoints": true
     }
   ]
 }

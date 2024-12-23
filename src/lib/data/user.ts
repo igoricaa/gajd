@@ -102,6 +102,12 @@ export async function getUserByGithubId(
   return user[0];
 }
 
+/**
+ * Retrieves the password hash for a user.
+ * @param userId The user ID.
+ * @returns A promise that resolves to the password hash.
+ * @throws {Error} If the user ID is invalid or the user is not found.
+ */
 export async function getUserPasswordHash(userId: number): Promise<string> {
   if (!userId) throw new Error('Invalid user ID');
 

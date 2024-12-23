@@ -1,4 +1,4 @@
-import { InferSelectModel } from 'drizzle-orm';
+import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
   pgTable,
   serial,
@@ -69,7 +69,53 @@ export const passwordResetSession = pgTable('password_reset_session', {
   emailVerified: boolean('email_verified').notNull().default(false),
 });
 
+export const resources = pgTable('resources', {
+  id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  link: varchar('link', { length: 255 }).notNull(),
+  categoryId: integer('category_id')
+    .notNull()
+    .references(() => resourceCategories.id),
+  subcategoryId: integer('subcategory_id').references(
+    () => resourceSubcategories.id
+  ),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  deletedAt: timestamp('deleted_at'),
+});
+
+export const resourceCategories = pgTable('resource_categories', {
+  id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: varchar('description', { length: 255 }),
+});
+
+export const resourceSubcategories = pgTable('resource_subcategories', {
+  id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: varchar('description', { length: 255 }).notNull(),
+  categoryId: integer('category_id')
+    .notNull()
+    .references(() => resourceCategories.id, { onDelete: 'cascade' }),
+});
+
 export type User = InferSelectModel<typeof users>;
+export type NewUser = InferInsertModel<typeof users>;
+export type Resource = InferSelectModel<typeof resources>;
+export type NewResource = InferInsertModel<typeof resources>;
+export type ResourceCategory = InferSelectModel<typeof resourceCategories>;
+export type NewResourceCategory = InferInsertModel<typeof resourceCategories>;
+export type ResourceSubcategory = InferSelectModel<
+  typeof resourceSubcategories
+>;
+export type NewResourceSubcategory = InferInsertModel<
+  typeof resourceSubcategories
+>;
+
 // export type EmailVerificationRequest = InferSelectModel<
 //   typeof emailVerificationRequestTable
 // >;

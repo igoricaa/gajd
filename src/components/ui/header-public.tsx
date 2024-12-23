@@ -1,8 +1,8 @@
-import { CircleIcon, Home, LogOut } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from './button';
 import { getUser } from '@/lib/data/user';
 import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import SignOutButton from '@/app/(auth)/dashboard/signout-button';
 
 export default async function Header() {
   const user = await getUser();
@@ -35,9 +35,15 @@ export default async function Header() {
           >
             About
           </Link>
+          <Link
+            href='/dashboard'
+            className='text-sm font-medium text-foreground hover:text-foreground/60'
+          >
+            Dashboard
+          </Link>
           <ThemeSwitcher />
           {user ? (
-            <p>ulogovan!</p>
+            <SignOutButton />
           ) : (
             <Button
               asChild

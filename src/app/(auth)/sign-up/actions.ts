@@ -113,5 +113,5 @@ export async function signUpAction(
     createSession(user.id),
   ]);
 
-  return redirect('/');
+  return redirect('/dashboard');
 }

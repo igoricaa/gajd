@@ -14,7 +14,7 @@ import {
   encodeJWT,
   parseJWT,
   JWSRegisteredHeaders,
-  JWTClaims,
+  JWTRegisteredClaims,
 } from '@oslojs/jwt';
 import {
   SESSION_DURATION,
@@ -175,7 +175,7 @@ function validateHeaders(header: object) {
 }
 
 function validateClaims(payload: object) {
-  const claims = new JWTClaims(payload);
+  const claims = new JWTRegisteredClaims(payload);
 
   if (claims.hasExpiration() && !claims.verifyExpiration()) {
     throw new Error('Token has expired');
