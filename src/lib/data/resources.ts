@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
 import {
   NewResource,
   resourceCategories,
@@ -21,6 +21,8 @@ export async function createResource(resource: NewResource) {
     return { success: false, message: 'Invalid resource data' };
   }
 
+  console.log('resource:', resource);
+
   const resourceResult = await db
     .insert(resources)
     .values({ ...resource })
@@ -35,7 +37,7 @@ export async function createResource(resource: NewResource) {
 
 export async function createCategory(category: NewResourceCategory) {
   // TODO: validate
-  if (!category || !category.name) {
+  if (!category || !category.name || !category.slug) {
     return null;
   }
 
@@ -43,6 +45,7 @@ export async function createCategory(category: NewResourceCategory) {
     .insert(resourceCategories)
     .values({
       name: category.name,
+      slug: category.slug,
       description: category.description,
     })
     .returning();
@@ -57,9 +60,12 @@ export async function createCategory(category: NewResourceCategory) {
 export async function createSubcategory(subcategory: NewResourceSubcategory) {
   // TODO: validate
 
-  console.log('subcategory:', subcategory);
-
-  if (!subcategory || !subcategory.name || !subcategory.categoryId) {
+  if (
+    !subcategory ||
+    !subcategory.name ||
+    !subcategory.slug ||
+    !subcategory.categoryId
+  ) {
     return null;
   }
 
@@ -67,6 +73,7 @@ export async function createSubcategory(subcategory: NewResourceSubcategory) {
     .insert(resourceSubcategories)
     .values({
       name: subcategory.name,
+      slug: subcategory.slug,
       description: subcategory.description,
       categoryId: subcategory.categoryId,
     })
@@ -89,6 +96,64 @@ export const getCategories = async () => {
   return categories;
 };
 
+export const getCategoriesAndSubcategories = async () => {
+  const categoriesData = await db.select().from(resourceCategories);
+  const subcategoriesData = await db.select().from(resourceSubcategories);
+
+  const result = categoriesData.map((category) => {
+    const categorySubcategories = subcategoriesData.filter(
+      (subcategory) => subcategory.categoryId === category.id
+    );
+
+    return {
+      ...category,
+      subcategories: categorySubcategories,
+    };
+  });
+
+  return result;
+};
+
+// export const getCategoryByName = async (name: string) => {
+//   const data = await db
+//     .select()
+//     .from(resourceCategories)
+//     .where(eq(resourceCategories.name, name));
+
+//   const category = data[0];
+
+//   if (!category) {
+//     return null;
+//   }
+
+//   return category;
+// };
+
+// export const getSubcategoryByName = async (name: string) => {
+//   const data = await db
+//     .select()
+//     .from(resourceSubcategories)
+//     .where(eq(resourceSubcategories.name, name));
+
+//   const subcategory = data[0];
+
+//   if (!subcategory) {
+//     return null;
+//   }
+
+//   return subcategory;
+// };
+
+// export const getSubCategoryOrCategoryByName = async (categoryName: string) => {
+//   const subCategory = await getSubcategoryByName(categoryName);
+
+//   if (!subCategory) {
+//     return await getCategoryByName(categoryName);
+//   }
+
+//   return subCategory;
+// };
+
 export const getSubcategories = async () => {
   const subcategories = await db.select().from(resourceSubcategories);
 
@@ -99,22 +164,22 @@ export const getSubcategories = async () => {
   return subcategories;
 };
 
-export const getSubcategoriesForCategory = async (categoryId: number) => {
-  if (!categoryId) {
-    throw new Error('Invalid category ID');
-  }
+// export const getSubcategoriesForCategory = async (categoryId: number) => {
+//   if (!categoryId) {
+//     throw new Error('Invalid category ID');
+//   }
 
-  const subcategories = await db
-    .select()
-    .from(resourceSubcategories)
-    .where(eq(resourceSubcategories.categoryId, categoryId));
+//   const subcategories = await db
+//     .select()
+//     .from(resourceSubcategories)
+//     .where(eq(resourceSubcategories.categoryId, categoryId));
 
-  if (subcategories.length < 1) {
-    return [];
-  }
+//   if (subcategories.length < 1) {
+//     return [];
+//   }
 
-  return subcategories;
-};
+//   return subcategories;
+// };
 
 export const getResources = async () => {
   const resourcesData = await db.select().from(resources);
@@ -126,44 +191,56 @@ export const getResources = async () => {
   return resourcesData;
 };
 
-export const getResourcesByCategory = async (categoryId: number) => {
-  if (!categoryId) {
-    throw new Error('Invalid category ID');
-  }
+// export const getResourcesByCategory = async (categoryId: number) => {
+//   if (!categoryId) {
+//     throw new Error('Invalid category ID');
+//   }
 
-  const resourcesData = await db
-    .select()
-    .from(resources)
-    .where(eq(resources.categoryId, categoryId));
+//   const resourcesData = await db
+//     .select()
+//     .from(resources)
+//     .where(eq(resources.categoryId, categoryId));
 
-  if (resourcesData.length < 1) {
-    return [];
-  }
+//   if (resourcesData.length < 1) {
+//     return [];
+//   }
 
-  return resourcesData;
-};
+//   return resourcesData;
+// };
 
-export const getResourcesByCategoryAndSubcategory = async (
-  categoryId: number,
-  subcategoryId: number
-) => {
-  if (!categoryId || !subcategoryId) {
-    throw new Error('Invalid category or subcategory ID');
-  }
+// export const getResourcesBySubcategory = async (subcategoryId: number) => {
+//   if (!subcategoryId) {
+//     throw new Error('Invalid subcategory ID');
+//   }
 
-  const resourcesData = await db
-    .select()
-    .from(resources)
-    .where(
-      and(
-        eq(resources.categoryId, categoryId),
-        eq(resources.subcategoryId, subcategoryId)
-      )
-    );
+//   const resourcesData = await db
+//     .select()
+//     .from(resources)
+//     .where(eq(resources.subcategoryId, subcategoryId));
 
-  if (resourcesData.length < 1) {
-    return [];
-  }
+//   if (resourcesData.length < 1) {
+//     return [];
+//   }
 
-  return resourcesData;
-};
+//   return resourcesData;
+// };
+
+// export const getResourcesByCategoryName = async (categoryName: string) => {
+//   if (!categoryName) {
+//     throw new Error('Invalid category name');
+//   }
+
+//   const subcategory = await getSubcategoryByName(categoryName);
+
+//   if (subcategory) {
+//     return getResourcesBySubcategory(subcategory.id);
+//   }
+
+//   const category = await getCategoryByName(categoryName);
+
+//   if (!category) {
+//     return [];
+//   }
+
+//   return getResourcesByCategory(category.id);
+// };

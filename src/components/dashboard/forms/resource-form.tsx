@@ -37,9 +37,7 @@ const formSchema = z.object({
   categoryId: z.string({
     required_error: 'Please select a category.',
   }),
-  subcategoryId: z.string({
-    required_error: 'Please select a subcategory.',
-  }),
+  subcategoryId: z.string().optional(),
 });
 
 export function ResourceForm({
@@ -198,6 +196,9 @@ export function ResourceForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value={null as any} key='none'>
+                      None
+                    </SelectItem>
                     {filteredSubcategories.map((subcategory) => (
                       <SelectItem
                         key={subcategory.id}

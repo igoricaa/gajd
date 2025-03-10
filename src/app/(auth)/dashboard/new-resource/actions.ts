@@ -17,7 +17,8 @@ export async function createResourceAction(formData: FormData) {
   const description = formData.get('description') as string;
   const link = formData.get('link') as string;
   const categoryId = parseInt(formData.get('categoryId') as string);
-  const subcategoryId = parseInt(formData.get('subcategoryId') as string);
+  const subCategoryIdStr = formData.get('subcategoryId') as string;
+  const subcategoryId = subCategoryIdStr ? parseInt(subCategoryIdStr) : null;
   const { userId } = await verifySession();
 
   if (userId === null) {
@@ -44,10 +45,12 @@ export async function createResourceAction(formData: FormData) {
 
 export async function createCategoryAction(formData: FormData) {
   const name = formData.get('name') as string;
+  const slug = name.toLowerCase().replace(/ /g, '-');
   const description = formData.get('description') as string;
 
   const category: NewResourceCategory = {
     name,
+    slug,
     description,
   };
 
@@ -62,6 +65,7 @@ export async function createCategoryAction(formData: FormData) {
 
 export async function createSubcategoryAction(formData: FormData) {
   const name = formData.get('name') as string;
+  const slug = name.toLowerCase().replace(/ /g, '-');
   const categoryId = formData.get('categoryId') as string;
   const description = formData.get('description') as string;
 
@@ -70,6 +74,7 @@ export async function createSubcategoryAction(formData: FormData) {
 
   const subcategory: NewResourceSubcategory = {
     name,
+    slug,
     description,
     categoryId: parseInt(categoryId),
   };

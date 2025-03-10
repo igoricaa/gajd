@@ -58,7 +58,6 @@ export const getUser = cache(async () => {
 
   try {
     const data = await db.select().from(users).where(eq(users.id, userId));
-
     const user: User = data[0];
 
     return user;

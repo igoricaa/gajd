@@ -1,38 +1,43 @@
 import { redirect } from 'next/navigation';
-import SignOutButton from './signout-button';
 import { globalGETRateLimit } from '@/lib/rate-limit/request';
 import { AUTH_ERROR_MESSAGES } from '@/lib/constants';
 import { getUser } from '@/lib/data/user';
-import { CategoryFilter } from '@/components/dashboard/category-filter';
+import {
+  getCategoriesAndSubcategories,
+  getResources,
+} from '@/lib/data/resources';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { ResourceGrid } from '@/components/dashboard/resource-grid';
+import { Category } from '@/lib/types';
+import ResourcesWrapper from '@/components/dashboard/resources-wrapper';
 
 export default async function Page() {
   if (!(await globalGETRateLimit())) {
     return AUTH_ERROR_MESSAGES.RATE_LIMIT;
   }
 
-  // const user = await getUser();
-  // // if (user === null) {
-  // //   return redirect('/sign-in');
-  // // }
+  const user = await getUser();
+  if (!user) {
+    return redirect('/sign-in');
+  }
   // if (!user.emailVerified) {
   //   return redirect('/verify-email');
   // }
 
+  const resources = await getResources();
+  const categoriesAndSubcategories: Category[] =
+    await getCategoriesAndSubcategories();
+
   return (
-    <section className='px-side py-4 min-h-screen'>
-      <DashboardShell>
-        <DashboardHeader
-          heading='Dashboard'
-          text='Welcome to your developer resource hub.'
-        />
-        <div className='grid gap-4 md:grid-cols-[200px_1fr]'>
-          <CategoryFilter />
-          <ResourceGrid />
-        </div>
-      </DashboardShell>
+    <section>
+      <DashboardHeader
+        heading='Dashboard'
+        text='Welcome to your developer resource hub.'
+      />
+      <ResourcesWrapper
+        categoriesAndSubcategories={categoriesAndSubcategories}
+        resources={resources}
+        className='grid gap-4 md:grid-cols-[200px_1fr] mt-16'
+      />
     </section>
   );
 }

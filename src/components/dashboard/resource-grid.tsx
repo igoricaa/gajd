@@ -9,40 +9,19 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
+import { Resource } from '@/lib/db/schema';
 
-const resources = [
-  {
-    title: 'React Hooks Explained',
-    description: 'A comprehensive guide to React Hooks',
-    link: 'https://example.com/react-hooks',
-    category: 'React',
-  },
-  {
-    title: 'CSS Grid Layout',
-    description: 'Master CSS Grid with this tutorial',
-    link: 'https://example.com/css-grid',
-    category: 'CSS',
-  },
-  {
-    title: 'Next.js 13 Features',
-    description: 'Explore the new features in Next.js 13',
-    link: 'https://example.com/nextjs-13',
-    category: 'Next.js',
-  },
-  // Add more resources here
-];
-
-export function ResourceGrid() {
+export function ResourceGrid({ resources }: { resources: Resource[] }) {
   return (
     <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
       {resources.map((resource, index) => (
         <Card key={index}>
           <CardHeader>
-            <CardTitle>{resource.title}</CardTitle>
+            <CardTitle>{resource.name}</CardTitle>
             <CardDescription>{resource.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Badge>{resource.category}</Badge>
+            <Badge>{resource.categoryId}</Badge>
           </CardContent>
           <CardFooter className='flex justify-between'>
             <Button variant='outline' size='icon'>

@@ -16,7 +16,7 @@ import {
   encodeJWT,
   parseJWT,
   JWSRegisteredHeaders,
-  JWTClaims,
+  JWTRegisteredClaims,
 } from '@oslojs/jwt';
 import { SESSION_COOKIE_NAME, JWT_SECRET_KEY } from '../constants';
 export function generateSessionToken(): string {
@@ -201,7 +201,7 @@ function validateHeaders(header: object) {
 }
 
 function validateClaims(payload: object) {
-  const claims = new JWTClaims(payload);
+  const claims = new JWTRegisteredClaims(payload);
 
   if (claims.hasExpiration() && !claims.verifyExpiration()) {
     throw new Error('Token has expired');

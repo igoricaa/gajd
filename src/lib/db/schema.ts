@@ -91,12 +91,14 @@ export const resources = pgTable('resources', {
 export const resourceCategories = pgTable('resource_categories', {
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).unique(),
   description: varchar('description', { length: 255 }),
 });
 
 export const resourceSubcategories = pgTable('resource_subcategories', {
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).unique(),
   description: varchar('description', { length: 255 }).notNull(),
   categoryId: integer('category_id')
     .notNull()

@@ -1,17 +1,7 @@
-import { redirect } from 'next/navigation';
 import { LoginForm } from './components';
-import { getUser } from '@/lib/data/user';
 import Link from 'next/link';
 
 export default async function Page() {
-  const user = await getUser();
-  if (user !== null) {
-    return redirect('/');
-  }
-
-  // if (!user.emailVerified) {
-  //   return redirect('/verify-email');
-  // }
 
   return (
     <>
