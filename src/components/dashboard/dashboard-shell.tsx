@@ -18,10 +18,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </div>
         </div>
       </header>
-      <div className='container mx-auto grid flex-1 gap-12'>
-        <main className='flex w-full flex-1 flex-col overflow-hidden'>
+      <div className='max-w-7xl mx-auto w-full'>
+        <div className='flex w-full flex-1 flex-col overflow-hidden'>
           {children}
-        </main>
+        </div>
       </div>
     </div>
   );

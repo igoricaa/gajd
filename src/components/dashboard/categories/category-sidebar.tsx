@@ -13,8 +13,8 @@ export function CategorySidebar({
   setSelectedCategory: (category: ResourceCategory | null) => void;
 }) {
   return (
-    <ScrollArea className='w-full rounded-md border'>
-      <div className='flex flex-col space-y-2 p-4'>
+    <ScrollArea className='min-w-64 w-64 h-fit rounded-md p-4 bg-black/20'>
+      <div className='flex flex-col space-y-2'>
         <h2 className='font-semibold'>Categories</h2>
         <CategoryFilter
           categories={categoriesAndSubcategories}

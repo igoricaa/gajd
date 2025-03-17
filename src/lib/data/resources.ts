@@ -14,6 +14,7 @@ export async function createResource(resource: NewResource) {
   if (
     !resource ||
     !resource.name ||
+    !resource.slug ||
     !resource.link ||
     !resource.categoryId ||
     !resource.userId
@@ -189,6 +190,19 @@ export const getResources = async () => {
   }
 
   return resourcesData;
+};
+
+export const getResourceBySlug = async (slug: string) => {
+  const resource = await db
+    .select()
+    .from(resources)
+    .where(eq(resources.slug, slug));
+
+  if (resource.length < 1) {
+    return null;
+  }
+
+  return resource[0];
 };
 
 // export const getResourcesByCategory = async (categoryId: number) => {

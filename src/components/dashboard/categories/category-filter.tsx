@@ -19,10 +19,19 @@ export function CategoryFilter({
     Record<string, boolean>
   >({});
 
-  const toggleCategory = (categoryName: string) => {
+  const toggleCategory = (category: Category) => {
+    setSelectedCategory(category);
+
+    if (category !== selectedCategory && expandedCategories[category.name]) {
+      setExpandedCategories((prev) => ({
+        ...prev,
+        [category.name]: false,
+      }));
+    }
+
     setExpandedCategories((prev) => ({
       ...prev,
-      [categoryName]: !prev[categoryName],
+      [category.name]: !prev[category.name],
     }));
   };
 
@@ -39,34 +48,21 @@ export function CategoryFilter({
 
       {categories.map((category: Category) => (
         <div key={category.name} className='space-y-1'>
-          <div className='flex items-center'>
-            <button
-              onClick={() => toggleCategory(category.name)}
-              className='mr-1 p-1 hover:bg-gray-100 rounded-full'
-              aria-label={
-                expandedCategories[category.name]
-                  ? 'Collapse category'
-                  : 'Expand category'
-              }
-            >
-              {expandedCategories[category.name] ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
-            </button>
-
-            <Badge
-              variant={selectedCategory === category ? 'default' : 'outline'}
-              className='cursor-pointer capitalize'
-              onClick={() => setSelectedCategory(category)}
-            >
-              {category.name}
-            </Badge>
-          </div>
+          <Badge
+            variant={selectedCategory === category ? 'default' : 'outline'}
+            className='cursor-pointer capitalize'
+            onClick={() => toggleCategory(category)}
+          >
+            {category.name}
+            {expandedCategories[category.name] ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
+          </Badge>
 
           {expandedCategories[category.name] && (
-            <ul className='ml-6 space-y-1 mt-1'>
+            <ul className='ml-2 space-y-1 mt-1'>
               {category.subcategories.map((subcategory: ResourceCategory) => (
                 <li
                   key={subcategory.name}

@@ -12,6 +12,11 @@ export default async function middleware(
   );
   if (rateLimitResponse) return rateLimitResponse;
 
+  // TODO 
+  if (request.nextUrl.pathname.startsWith('/api/uploadthing')) {
+    return NextResponse.next();
+  }
+
   let sessionData: SessionJWTPayload | null = null;
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (sessionCookie) {

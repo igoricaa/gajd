@@ -36,7 +36,8 @@ export default async function Page() {
       <ResourcesWrapper
         categoriesAndSubcategories={categoriesAndSubcategories}
         resources={resources}
-        className='grid gap-4 md:grid-cols-[200px_1fr] mt-16'
+        // className='grid gap-4 md:grid-cols-[200px_1fr] mt-16'
+        className='mt-16 flex gap-4'
       />
     </section>
   );

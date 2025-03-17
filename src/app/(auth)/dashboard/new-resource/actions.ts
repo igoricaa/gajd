@@ -14,7 +14,13 @@ import {
 
 export async function createResourceAction(formData: FormData) {
   const name = formData.get('name') as string;
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s-]+/g, '-');
   const description = formData.get('description') as string;
+  const featuredImage = formData.get('featuredImage') as string;
   const link = formData.get('link') as string;
   const categoryId = parseInt(formData.get('categoryId') as string);
   const subCategoryIdStr = formData.get('subcategoryId') as string;
@@ -27,7 +33,9 @@ export async function createResourceAction(formData: FormData) {
 
   const resource: NewResource = {
     name,
+    slug,
     description,
+    featuredImage,
     link,
     categoryId,
     subcategoryId,

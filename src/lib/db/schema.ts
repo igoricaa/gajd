@@ -72,8 +72,13 @@ export const passwordResetSession = pgTable('password_reset_session', {
 export const resources = pgTable('resources', {
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).unique(),
   description: text('description'),
+  featuredImage: varchar('featured_image', { length: 255 }),
   link: varchar('link', { length: 255 }).notNull(),
+  // useCase: varchar('use_case'),
+  // overview: text('overview'),
+  // howToUse: varchar('how_to_use'),
   categoryId: integer('category_id')
     .notNull()
     .references(() => resourceCategories.id),

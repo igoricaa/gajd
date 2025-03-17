@@ -18,7 +18,7 @@ export default async function Header() {
 
   return (
     <header className='w-full'>
-      <div className='px-side py-4 flex justify-between items-center'>
+      <div className='py-4 flex justify-between items-center'>
         <Link href='/' className='flex items-center'>
           <span className='text-2xl font-semibold text-foreground'>Gajd</span>
         </Link>

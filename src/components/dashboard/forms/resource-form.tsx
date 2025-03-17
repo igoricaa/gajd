@@ -25,12 +25,16 @@ import {
 } from '@/components/ui/select';
 import { createResourceAction } from '@/app/(auth)/dashboard/new-resource/actions';
 import { ResourceCategory, ResourceSubcategory } from '@/lib/db/schema';
+import { UploadButton } from '@/components/uploadthing/uploadthing';
+import Image from 'next/image';
 
 const formSchema = z.object({
   name: z.string().min(2, {
     message: 'Name must be at least 2 characters.',
   }),
+  slug: z.string().optional(),
   description: z.string().optional(),
+  featuredImage: z.string().optional(),
   link: z.string().url({
     message: 'Please enter a valid URL.',
   }),
@@ -59,7 +63,9 @@ export function ResourceForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      slug: '',
       description: '',
+      featuredImage: '',
       link: '',
       categoryId: '',
       subcategoryId: '',
@@ -124,6 +130,60 @@ export function ResourceForm({
                 Provide a brief description of the resource.
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='featuredImage'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Featured Image</FormLabel>
+              <div className='space-y-3'>
+                <FormControl>
+                  <Input placeholder='Resource featured image URL' {...field} />
+                </FormControl>
+
+                <div className='flex flex-col gap-2'>
+                  <p className='text-sm font-medium'>Or upload an image:</p>
+                  <UploadButton
+                    endpoint='imageUploader'
+                    onClientUploadComplete={(res) => {
+                      console.log('Files: ', res);
+                      alert('Upload Completed');
+                      // Set the URL from the uploaded file to the form field
+                      if (res && res[0]) {
+                        field.onChange(res[0].url);
+                        // toast.success("Image uploaded successfully!");
+                      }
+                    }}
+                    onUploadError={(error: Error) => {
+                      // toast.error(`Upload failed: ${error.message}`);
+                      alert(`ERROR! ${error.message}`);
+                    }}
+                  />
+
+                  {field.value && (
+                    <div className='mt-2'>
+                      <p className='text-sm text-muted-foreground mb-2'>
+                        Preview:
+                      </p>
+                      <Image
+                        src={field.value}
+                        alt='Featured image preview'
+                        className='max-h-40 rounded-md border'
+                        width={160}
+                        height={160}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <FormDescription>
+                  Provide a URL or upload an image for the resource.
+                </FormDescription>
+                <FormMessage />
+              </div>
             </FormItem>
           )}
         />

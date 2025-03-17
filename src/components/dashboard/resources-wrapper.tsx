@@ -22,8 +22,6 @@ const ResourcesWrapper = ({
     useState<Resource[]>(resources);
 
   useEffect(() => {
-    console.log('izabrana: ', selectedCategory);
-
     if (selectedCategory) {
       const subcategoryCurr = categoriesAndSubcategories.find((category) =>
         category.subcategories.some(
@@ -66,7 +64,10 @@ const ResourcesWrapper = ({
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
-      <ResourceGrid resources={filteredResources} />
+      <ResourceGrid
+        resources={filteredResources}
+        categoriesAndSubcategories={categoriesAndSubcategories}
+      />
     </div>
   );
 };
