@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,6 +26,8 @@ import { createResourceAction } from '@/app/(auth)/dashboard/new-resource/action
 import { ResourceCategory, ResourceSubcategory } from '@/lib/db/schema';
 import { UploadButton } from '@/components/uploadthing/uploadthing';
 import Image from 'next/image';
+import { LexicalEditor } from '@/components/ui/lexical-editor';
+import { LexicalContent } from '@/lib/types';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -38,6 +39,9 @@ const formSchema = z.object({
   link: z.string().url({
     message: 'Please enter a valid URL.',
   }),
+  useCase: z.custom<LexicalContent>().optional(),
+  overview: z.custom<LexicalContent>().optional(),
+  howToUse: z.custom<LexicalContent>().optional(),
   categoryId: z.string({
     required_error: 'Please select a category.',
   }),
@@ -67,6 +71,9 @@ export function ResourceForm({
       description: '',
       featuredImage: '',
       link: '',
+      useCase: undefined,
+      overview: undefined,
+      howToUse: undefined,
       categoryId: '',
       subcategoryId: '',
     },
@@ -88,7 +95,17 @@ export function ResourceForm({
 
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
+      if (value === null || value === undefined) {
+        formData.append(key, '');
+      } else if (
+        key === 'useCase' ||
+        key === 'overview' ||
+        key === 'howToUse'
+      ) {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value.toString());
+      }
     });
 
     const result = await createResourceAction(formData);
@@ -112,7 +129,6 @@ export function ResourceForm({
               <FormControl>
                 <Input placeholder='Resource name' {...field} />
               </FormControl>
-              <FormDescription>Enter the name of the resource.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -126,9 +142,57 @@ export function ResourceForm({
               <FormControl>
                 <Textarea placeholder='Resource description' {...field} />
               </FormControl>
-              <FormDescription>
-                Provide a brief description of the resource.
-              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='useCase'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Use Case</FormLabel>
+              <FormControl>
+                <LexicalEditor
+                  placeholder='Provide a detailed use case for the resource...'
+                  onChangeHandler={field.onChange}
+                  value={field.value}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='overview'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Overview</FormLabel>
+              <FormControl>
+                <LexicalEditor
+                  placeholder='Provide a detailed overview of the resource...'
+                  onChangeHandler={field.onChange}
+                  value={field.value}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='howToUse'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>How to Use</FormLabel>
+              <FormControl>
+                <LexicalEditor
+                  placeholder='Provide a detailed guide on how to use the resource...'
+                  onChangeHandler={field.onChange}
+                  value={field.value}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -178,10 +242,6 @@ export function ResourceForm({
                     </div>
                   )}
                 </div>
-
-                <FormDescription>
-                  Provide a URL or upload an image for the resource.
-                </FormDescription>
                 <FormMessage />
               </div>
             </FormItem>
@@ -196,7 +256,6 @@ export function ResourceForm({
               <FormControl>
                 <Input placeholder='https://example.com' {...field} />
               </FormControl>
-              <FormDescription>Enter the URL of the resource.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -231,9 +290,6 @@ export function ResourceForm({
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>
-                Choose the category for this resource.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -269,9 +325,6 @@ export function ResourceForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  Choose the subcategory for this resource.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -8,7 +8,9 @@ import {
   integer,
   boolean,
   pgEnum,
+  jsonb,
 } from 'drizzle-orm/pg-core';
+import { LexicalContent } from '../types';
 
 export const roleEnum = pgEnum('role', ['member', 'admin']);
 export const accountTypeEnum = pgEnum('type', ['email', 'google', 'github']);
@@ -76,9 +78,9 @@ export const resources = pgTable('resources', {
   description: text('description'),
   featuredImage: varchar('featured_image', { length: 255 }),
   link: varchar('link', { length: 255 }).notNull(),
-  // useCase: varchar('use_case'),
-  // overview: text('overview'),
-  // howToUse: varchar('how_to_use'),
+  useCase: jsonb('use_case').$type<LexicalContent>(),
+  overview: jsonb('overview').$type<LexicalContent>(),
+  howToUse: jsonb('how_to_use').$type<LexicalContent>(),
   categoryId: integer('category_id')
     .notNull()
     .references(() => resourceCategories.id),

@@ -1,12 +1,19 @@
 import { buttonVariants } from '@/components/ui/button';
+import { RichText } from '@/components/ui/rich-text';
 import { getResourceBySlug } from '@/lib/data/resources';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-const ResourcePage = async ({ params }: { params: { slug: string } }) => {
-  const resource = await getResourceBySlug(params.slug);
+const ResourcePage = async ({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) => {
+  const slug = (await params).slug;
+
+  const resource = await getResourceBySlug(slug);
 
   if (!resource) {
     return notFound();
@@ -47,6 +54,11 @@ const ResourcePage = async ({ params }: { params: { slug: string } }) => {
           />
         </Link>
       )}
+      <div className='space-y-8'>
+        {resource.useCase && <RichText content={resource.useCase} />}
+        {resource.overview && <RichText content={resource.overview} />}
+        {resource.howToUse && <RichText content={resource.howToUse} />}
+      </div>
     </section>
   );
 };

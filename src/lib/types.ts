@@ -15,3 +15,36 @@ export interface EmailVerificationRequest {
 export type Category = ResourceCategory & {
   subcategories: ResourceCategory[];
 };
+
+export interface LexicalNode {
+  text?: string;
+  format?: number;
+  detail?: number;
+  mode?: string;
+  style?: string;
+  version?: number;
+  children?: LexicalNode[];
+}
+
+export interface LexicalChild {
+  children?: LexicalNode[];
+  direction?: string;
+  format?: string;
+  indent?: number;
+  type?: string;
+  version?: number;
+  listType?: 'bullet' | 'number';
+}
+
+export interface LexicalRoot {
+  root: {
+    children: LexicalChild[];
+    direction: string;
+    format: string;
+    indent: number;
+    type: string;
+    version: number;
+  };
+}
+
+export type LexicalContent = LexicalRoot | null; 
