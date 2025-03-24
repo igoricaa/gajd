@@ -29,7 +29,11 @@ const ResourcePage = async ({
           </p>
         </div>
         <div className='flex gap-4'>
-          <Link href={resource.link} className={cn(buttonVariants())}>
+          <Link
+            href={resource.link}
+            target='_blank'
+            className={cn(buttonVariants())}
+          >
             View Resource
           </Link>
           <Link
@@ -54,11 +58,32 @@ const ResourcePage = async ({
           />
         </Link>
       )}
-      <div className='space-y-8'>
-        {resource.useCase && <RichText content={resource.useCase} />}
-        {resource.overview && <RichText content={resource.overview} />}
-        {resource.howToUse && <RichText content={resource.howToUse} />}
-      </div>
+      <article className='space-y-8'>
+        {resource.useCase && (
+          <div className='space-y-5'>
+            <h3 className='text-2xl font-medium border-b border-white/30 pb-4 mb-0'>
+              Use Case
+            </h3>
+            <RichText content={resource.useCase} />
+          </div>
+        )}
+        {resource.overview && (
+          <div className='space-y-5'>
+            <h3 className='text-2xl font-medium border-b border-white/30 pb-4 mb-0'>
+              Overview
+            </h3>
+            <RichText content={resource.overview} />
+          </div>
+        )}
+        {resource.howToUse && (
+          <div className='space-y-5'>
+            <h3 className='text-2xl font-medium border-b border-white/30 pb-4 mb-0'>
+              How to Use
+            </h3>
+            <RichText content={resource.howToUse} />
+          </div>
+        )}
+      </article>
     </section>
   );
 };

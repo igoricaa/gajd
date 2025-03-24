@@ -1,5 +1,3 @@
-'use client';
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,14 +10,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Link from 'next/link';
-import LinkButton from '../ui/link';
+import SignOutButton from '@/app/(auth)/dashboard/signout-button';
+import { ThemeSwitcher } from '../theme-switcher';
 
 export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='default' className='relative h-8 w-8 rounded-full'>
+        <Button variant='default' className='relative h-10 w-10 rounded-full'>
           <Avatar className='h-8 w-8'>
             <AvatarImage src='/avatars/01.png' alt='@username' />
             <AvatarFallback>SC</AvatarFallback>
@@ -47,9 +45,17 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+
+        {/* <DropdownMenuItem> */}
+        <ThemeSwitcher />
+        {/* </DropdownMenuItem> */}
+
         <DropdownMenuItem>
-          Log out
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          <SignOutButton
+            className='w-full justify-start bg-transparent text-foreground hover:bg-transparent p-0 h-auto'
+            formClassName='w-full'
+          />
+          {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
