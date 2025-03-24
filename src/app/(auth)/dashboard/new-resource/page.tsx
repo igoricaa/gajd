@@ -1,12 +1,20 @@
 import { ResourceCategoryForm } from '@/components/dashboard/forms/resource-category-form';
+import { ResourceEditForm } from '@/components/dashboard/forms/resource-edit-form';
 import { ResourceForm } from '@/components/dashboard/forms/resource-form';
 import { ResourceSubcategoryForm } from '@/components/dashboard/forms/resource-subcategory-form';
 import LinkButton from '@/components/ui/link';
-import { getCategories, getSubcategories } from '@/lib/data/resources';
+import {
+  getCategories,
+  getResources,
+  getSubcategories,
+} from '@/lib/data/resources';
 
 const ResourcesPage = async () => {
-  const categories = await getCategories();
-  const subcategories = await getSubcategories();
+  const [categories, subcategories, resources] = await Promise.all([
+    getCategories(),
+    getSubcategories(),
+    getResources(),
+  ]);
 
   return (
     <div className='container mx-auto py-8'>
@@ -33,6 +41,15 @@ const ResourcesPage = async () => {
             Create Resource Subcategory
           </h2>
           <ResourceSubcategoryForm categories={categories} />
+        </div>
+
+        <div>
+          <h2 className='text-2xl font-semibold mb-4'>Edit Resource</h2>
+          <ResourceEditForm
+            categories={categories}
+            subcategories={subcategories}
+            resources={resources}
+          />
         </div>
       </div>
     </div>

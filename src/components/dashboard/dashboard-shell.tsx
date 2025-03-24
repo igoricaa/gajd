@@ -22,11 +22,11 @@ export async function DashboardShell({ children }: DashboardShellProps) {
           <div className='flex items-center gap-4'>
             {user.role === 'admin' && (
               <LinkButton href='/dashboard/new-resource'>
-                New Resource
+                Manage Resources
               </LinkButton>
             )}
 
-            <UserNav />
+            <UserNav user={user} />
           </div>
         </div>
       </header>

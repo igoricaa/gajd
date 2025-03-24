@@ -12,14 +12,17 @@ import {
   NewResourceSubcategory,
 } from '@/lib/db/schema';
 import { LexicalContent } from '@/lib/types';
+import { db } from '@/lib/db';
+import { resources } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
+import { appErrors } from '@/lib/errors';
+import { AppError } from '@/lib/errors';
+import type { ActionResponse } from '@/types/actions';
 
 export async function createResourceAction(formData: FormData) {
   const name = formData.get('name') as string;
-  const slug = name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/[\s-]+/g, '-');
+  const slug = getSlug(name);
   const description = formData.get('description') as string;
   const featuredImage = formData.get('featuredImage') as string;
   const link = formData.get('link') as string;
@@ -56,6 +59,78 @@ export async function createResourceAction(formData: FormData) {
   }
 
   return { success: true, message: 'Resource created successfully' };
+}
+
+export async function editResourceAction(
+  formData: FormData
+): Promise<ActionResponse> {
+  try {
+    const { userId } = await verifySession();
+    if (!userId) {
+      throw new AppError('User not found');
+    }
+
+    const id = formData.get('id') as string;
+    if (!id) {
+      throw new AppError('Resource ID is required');
+    }
+
+    const name = formData.get('name') as string;
+    if (!name) {
+      throw new AppError('Name is required');
+    }
+
+    const slug = getSlug(name);
+    const description = formData.get('description') as string;
+    const featuredImage = formData.get('featuredImage') as string;
+    const link = formData.get('link') as string;
+    const categoryId = parseInt(formData.get('categoryId') as string);
+    const subcategoryId = formData.get('subcategoryId')
+      ? parseInt(formData.get('subcategoryId') as string)
+      : null;
+
+    // Parse JSONB fields
+    const useCase = formData.get('useCase')
+      ? JSON.parse(formData.get('useCase') as string)
+      : null;
+    const overview = formData.get('overview')
+      ? JSON.parse(formData.get('overview') as string)
+      : null;
+    const howToUse = formData.get('howToUse')
+      ? JSON.parse(formData.get('howToUse') as string)
+      : null;
+
+    await db
+      .update(resources)
+      .set({
+        name,
+        slug,
+        description,
+        featuredImage,
+        link,
+        categoryId,
+        subcategoryId,
+        useCase,
+        overview,
+        howToUse,
+        updatedAt: new Date(),
+      })
+      .where(eq(resources.id, parseInt(id)));
+
+    revalidatePath('/dashboard/resources');
+    revalidatePath(`/dashboard/resources/${slug}`);
+
+    return {
+      success: true,
+      message: 'Resource updated successfully',
+    };
+  } catch (error) {
+    console.error('Error updating resource:', error);
+    return {
+      success: false,
+      error: error instanceof AppError ? error : appErrors.UNEXPECTED_ERROR,
+    };
+  }
 }
 
 export async function createCategoryAction(formData: FormData) {
@@ -107,3 +182,11 @@ export async function createSubcategoryAction(formData: FormData) {
     message: 'Resource subcategory created successfully',
   };
 }
+
+const getSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s-]+/g, '-');
+};

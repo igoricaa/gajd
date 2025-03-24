@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import SignOutButton from '@/app/(auth)/dashboard/signout-button';
 import { ThemeSwitcher } from '../theme-switcher';
+import { User } from '@/lib/db/schema';
 
-export function UserNav() {
+export function UserNav({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -24,12 +25,16 @@ export function UserNav() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='w-56' align='end' forceMount>
+      <DropdownMenuContent
+        className='w-56 bg-background z-50'
+        align='end'
+        forceMount
+      >
         <DropdownMenuLabel className='font-normal'>
           <div className='flex flex-col space-y-1'>
-            <p className='text-sm font-medium leading-none'>username</p>
+            <p className='text-sm font-medium leading-none'>{user.username}</p>
             <p className='text-xs leading-none text-muted-foreground'>
-              user@example.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>

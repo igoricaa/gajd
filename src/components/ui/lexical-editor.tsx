@@ -7,10 +7,20 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { ListItemNode, ListNode } from '@lexical/list';
-import { EditorState } from 'lexical';
+import {
+  ListItemNode,
+  ListNode,
+  $createListNode,
+  $createListItemNode,
+} from '@lexical/list';
+import {
+  EditorState,
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+} from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { debounce } from '@/lib/utils/debounce';
@@ -58,35 +68,61 @@ const initialConfig = {
 
 function EditorContent({
   onChangeHandler,
-  // value,
+  value,
   placeholder = 'Enter your content here...',
   className,
 }: LexicalEditorProps) {
   const [editor] = useLexicalComposerContext();
 
-  // useEffect(() => {
-  //   if (value) {
-  //     editor.update(() => {
-  //       const root = $getRoot();
-  //       root.clear();
-  //       if (value.root?.children) {
-  //         value.root.children.forEach((child) => {
-  //           if (child.children) {
-  //             child.children.forEach((node) => {
-  //               if (node.text) {
-  //                 const textNode = $createTextNode(node.text);
-  //                 if (node.format) {
-  //                   textNode.setFormat(node.format);
-  //                 }
-  //                 root.append(textNode);
-  //               }
-  //             });
-  //           }
-  //         });
-  //       }
-  //     });
-  //   }
-  // }, [value, editor]);
+  useEffect(() => {
+    if (!value) return;
+
+    // Only update if the value has actually changed
+    const currentContent = editor.getEditorState().toJSON();
+    if (JSON.stringify(currentContent) === JSON.stringify(value)) return;
+
+    editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+      if (value.root?.children) {
+        value.root.children.forEach((child) => {
+          if ('type' in child && child.type === 'paragraph') {
+            const paragraph = $createParagraphNode();
+            child.children?.forEach((node) => {
+              if (node.text) {
+                const textNode = $createTextNode(node.text);
+                if (node.format) {
+                  textNode.setFormat(node.format);
+                }
+                paragraph.append(textNode);
+              }
+            });
+            root.append(paragraph);
+          } else if ('type' in child && child.type === 'list') {
+            const list = $createListNode(
+              child.listType === 'number' ? 'number' : 'bullet'
+            );
+            child.children?.forEach((item) => {
+              if ('type' in item && item.type === 'listitem') {
+                const listItem = $createListItemNode();
+                item.children?.forEach((node) => {
+                  if (node.text) {
+                    const textNode = $createTextNode(node.text);
+                    if (node.format) {
+                      textNode.setFormat(node.format);
+                    }
+                    listItem.append(textNode);
+                  }
+                });
+                list.append(listItem);
+              }
+            });
+            root.append(list);
+          }
+        });
+      }
+    });
+  }, [value, editor]);
 
   const debouncedOnChange = useCallback(
     debounce((editorState: EditorState) => {
