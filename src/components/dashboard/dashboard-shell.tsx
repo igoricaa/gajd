@@ -15,7 +15,7 @@ export async function DashboardShell({ children }: DashboardShellProps) {
   }
 
   return (
-    <div className='flex min-h-screen flex-col space-y-6'>
+    <div className='flex flex-col space-y-6 pb-24'>
       <header className='sticky top-0 z-40 border-b bg-background'>
         <div className='container flex mx-auto items-center justify-between py-4'>
           <MainNav />

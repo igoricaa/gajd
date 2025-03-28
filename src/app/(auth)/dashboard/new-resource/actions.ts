@@ -16,9 +16,8 @@ import { db } from '@/lib/db';
 import { resources } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { appErrors } from '@/lib/errors';
-import { AppError } from '@/lib/errors';
 import type { ActionResponse } from '@/types/actions';
+import { AppError, appErrors } from '@/lib/errors';
 
 export async function createResourceAction(formData: FormData) {
   const name = formData.get('name') as string;
@@ -67,17 +66,17 @@ export async function editResourceAction(
   try {
     const { userId } = await verifySession();
     if (!userId) {
-      throw new AppError('User not found');
+      throw appErrors.UNAUTHORIZED;
     }
 
     const id = formData.get('id') as string;
     if (!id) {
-      throw new AppError('Resource ID is required');
+      throw appErrors.RESOURCE_ID_REQUIRED;
     }
 
     const name = formData.get('name') as string;
     if (!name) {
-      throw new AppError('Name is required');
+      throw appErrors.NAME_REQUIRED;
     }
 
     const slug = getSlug(name);
@@ -122,7 +121,6 @@ export async function editResourceAction(
 
     return {
       success: true,
-      message: 'Resource updated successfully',
     };
   } catch (error) {
     console.error('Error updating resource:', error);

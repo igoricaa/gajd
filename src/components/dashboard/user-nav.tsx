@@ -13,6 +13,7 @@ import {
 import SignOutButton from '@/app/(auth)/dashboard/signout-button';
 import { ThemeSwitcher } from '../theme-switcher';
 import { User } from '@/lib/db/schema';
+import Link from 'next/link';
 
 export function UserNav({ user }: { user: User }) {
   return (
@@ -40,10 +41,12 @@ export function UserNav({ user }: { user: User }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <Link href='/profile'>
+            <DropdownMenuItem className='cursor-pointer'>
+              Profile
+              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem>
             Settings
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
